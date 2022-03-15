@@ -14,6 +14,10 @@ public abstract class AbstractCarParkService {
         this.emf = Persistence.createEntityManagerFactory("vsa-project");
     }
 
+    protected void close() {
+        emf.close();
+    }
+
     // Parkovací dom
 
     /**
