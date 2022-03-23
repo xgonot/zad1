@@ -37,6 +37,11 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object updateCarPark(Object carPark) {
+        return null;
+    }
+
+    @Override
     public Object deleteCarPark(Long carParkId) {
         return null;
     }
@@ -52,7 +57,17 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object getCarParkFloor(Long carParkFloorId) {
+        return null;
+    }
+
+    @Override
     public List<Object> getCarParkFloors(Long carParkId) {
+        return null;
+    }
+
+    @Override
+    public Object updateCarParkFloor(Object carParkFloor) {
         return null;
     }
 
@@ -92,6 +107,11 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object updateParkingSpot(Object parkingSpot) {
+        return null;
+    }
+
+    @Override
     public Object deleteParkingSpot(Long parkingSpotId) {
         return null;
     }
@@ -122,6 +142,11 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public List<Object> getCars(Long userId) {
+        return null;
+    }
+
+    @Override
+    public Object updateCar(Object car) {
         return null;
     }
 
@@ -167,6 +192,11 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object updateUser(Object user) {
+        return null;
+    }
+
+    @Override
     public Object deleteUser(Long userId) {
         return null;
     }
@@ -188,6 +218,11 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public List<Object> getMyReservations(Long userId) {
+        return null;
+    }
+
+    @Override
+    public Object updateReservation(Object reservation) {
         return null;
     }
 
@@ -232,7 +267,27 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object getCarType(Long carTypeId) {
+        return null;
+    }
+
+    @Override
+    public Object getCarType(String name) {
+        return null;
+    }
+
+    @Override
     public Object deleteCarType(Long carTypeId) {
+        return null;
+    }
+
+    @Override
+    public Object createCar(Long userId, String brand, String model, String colour, String vehicleRegistrationPlate, Long carTypeId) {
+        return null;
+    }
+
+    @Override
+    public Object createParkingSpot(Long carParkId, String floorIdentifier, String spotIdentifier, Long carTypeId) {
         return null;
     }
 

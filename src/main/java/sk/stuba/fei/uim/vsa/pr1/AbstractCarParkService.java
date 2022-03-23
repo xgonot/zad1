@@ -54,6 +54,14 @@ public abstract class AbstractCarParkService {
     public abstract List<Object> getCarParks();
 
     /**
+     * Aktualizácia údajov parkovacieho domu.
+     *
+     * @param carPark objekt entity parkovacieho domu. Objekt musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita parkovacieho domu
+     */
+    public abstract Object updateCarPark(Object carPark);
+
+    /**
      * Vymazanie parkovacieho domu podľa id
      *
      * @param carParkId id parkovacieho domu
@@ -75,7 +83,9 @@ public abstract class AbstractCarParkService {
     public abstract Object createCarParkFloor(Long carParkId, String floorIdentifier);
 
     /**
-     * Získanie entity poschodia parkovacieho domu
+     * Získanie entity poschodia parkovacieho domu. Táto metóda počíta s tím, že carParkFloor má kompozitný primárny kľúč.
+     * Implementovanie entity CarParkFloor pomocou kompozitného kľúča bude ohodnotené bonusovými bodmi.
+     * Implementujte iba v prípade, že nebude implementovať metódu {@link #getCarParkFloor(Long) getCarParkFloor(Long carParkFloorId)}
      *
      * @param carParkId       id parkovacieho domu
      * @param floorIdentifier identifikátor poschodia
@@ -84,12 +94,29 @@ public abstract class AbstractCarParkService {
     public abstract Object getCarParkFloor(Long carParkId, String floorIdentifier);
 
     /**
+     * Získanie entity poschodia parkovacieho domu podľa auto-generovaného id.
+     * Implementujte iba v prípade, že sa rozhodnete neriešiť kompozitný primárny kľúč a neimplementujete metódu {@link #getCarParkFloor(Long, String) getCarParkFloor(Long carParkId, String floorIdentifier)}
+     *
+     * @param carParkFloorId id poschodia parkovacieho domu
+     * @return objekt entity poschodia
+     */
+    public abstract Object getCarParkFloor(Long carParkFloorId);
+
+    /**
      * Získanie zoznamu entít všetkých poschodí v parkovacom dome
      *
      * @param carParkId id parkovacieho domu
      * @return zoznam entít poschodí
      */
     public abstract List<Object> getCarParkFloors(Long carParkId);
+
+    /**
+     * Aktualizácie údajov poschodia parkovacieho domu.
+     *
+     * @param carParkFloor objekt entity poschodia parkovacieho domu. Objekt entity musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita poschodia parkovacieho domu
+     */
+    public abstract Object updateCarParkFloor(Object carParkFloor);
 
     /**
      * Vymazanie poschodia v parkovacom dome
@@ -156,6 +183,14 @@ public abstract class AbstractCarParkService {
     public abstract Map<String, List<Object>> getOccupiedParkingSpots(String carParkName);
 
     /**
+     * Aktualizácia údajov parkovacieho miesta.
+     *
+     * @param parkingSpot objekt entity parkovacieho miesta. Objekt entity musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita parkovacieho miesta
+     */
+    public abstract Object updateParkingSpot(Object parkingSpot);
+
+    /**
      * Vymazanie parkovacieho miesta
      *
      * @param parkingSpotId id parkovacieho miesta
@@ -203,6 +238,14 @@ public abstract class AbstractCarParkService {
     public abstract List<Object> getCars(Long userId);
 
     /**
+     * Aktualizácia údajov auta.
+     *
+     * @param car objekt entity auta. Objekt entity musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita auta
+     */
+    public abstract Object updateCar(Object car);
+
+    /**
      * Vymazanie auta
      *
      * @param carId id auta
@@ -245,6 +288,14 @@ public abstract class AbstractCarParkService {
      * @return zoznam entít používateľov
      */
     public abstract List<Object> getUsers();
+
+    /**
+     * Aktualizácia údajov používateľa/zákazníka.
+     *
+     * @param user objekt entity používateľa. Objekt entity musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita používateľa
+     */
+    public abstract Object updateUser(Object user);
 
     /**
      * Vymazanie používateľa
@@ -291,6 +342,14 @@ public abstract class AbstractCarParkService {
      */
     public abstract List<Object> getMyReservations(Long userId);
 
+    /**
+     * Aktualizácia údajov rezervácie.
+     *
+     * @param reservation objekt entity rezervácie. Objekt entity musí obsahovať primárny kľúč entity.
+     * @return aktualizovaná entita rezervácie
+     */
+    public abstract Object updateReservation(Object reservation);
+
 
     // Skupina A
 
@@ -326,6 +385,8 @@ public abstract class AbstractCarParkService {
      * @return zoznam entít kupónov
      */
     public abstract List<Object> getCoupons(Long userId);
+
+    // Update metóda pre kupón neexistuje. Kupón je tak immutable entita.
 
     /**
      * Ukončenie rezervácie / parkovanie auta. Pri ukončení parkovania je zapísaný čas ukončenia rezervácie a vypočítaná celková cena za parkovanie
@@ -365,6 +426,24 @@ public abstract class AbstractCarParkService {
     public abstract List<Object> getCarTypes();
 
     /**
+     * Získanie objektu entity typu auta.
+     *
+     * @param carTypeId id typu auta
+     * @return objekt entity typu auta
+     */
+    public abstract Object getCarType(Long carTypeId);
+
+    /**
+     * Získanie objektu entity typu auta podľa názvu typu.
+     *
+     * @param name názov typu auta
+     * @return objekt entity typu auta
+     */
+    public abstract Object getCarType(String name);
+
+    // Update metóda pre typ auta neexistuje. Ak je potrebná zmena typu je potrebné vytvoriť nový a zmazať starý typ
+
+    /**
      * Vymazanie typu auta
      *
      * @param carTypeId id typu auta
@@ -372,6 +451,31 @@ public abstract class AbstractCarParkService {
      */
     public abstract Object deleteCarType(Long carTypeId);
 
+    /**
+     * Vytvorenie nového auta aj s definovaným typom.
+     *
+     * @param userId                   id používateľa/zákazníka
+     * @param brand                    značka auta
+     * @param model                    model auta
+     * @param colour                   farba karosérie auta
+     * @param vehicleRegistrationPlate evidenčné číslo vozidla
+     * @param carTypeId                id typu auta
+     * @return objekt entity auta
+     */
+    public abstract Object createCar(Long userId, String brand, String model, String colour, String vehicleRegistrationPlate, Long carTypeId);
+
+
+    /**
+     * Vytvorenie parkovacieho miesta na poschodí parkovacieho domu aj s typom auta, ktoré môže na ňom parkovať.
+     *
+     * @param carParkId       id parkovacieho domu
+     * @param floorIdentifier identifikátor poschodia
+     * @param spotIdentifier  identifikátor parkovacieho miesta. Môže byť poradové číslo, alebo iná skratka pre označenie miesta.
+     *                        Musí byť unikátna v rámci parkovacieho domu.
+     * @param carTypeId       id typu auta
+     * @return objekt entity parkovacieho miesta
+     */
+    public abstract Object createParkingSpot(Long carParkId, String floorIdentifier, String spotIdentifier, Long carTypeId);
 
     // Skupina C
 
