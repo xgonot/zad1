@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 
@@ -55,30 +54,30 @@ class CarParkServiceTest {
     }
 
     @Test
-    void shouldCreateUser() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void USER01_shouldCreateUser() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
         assertNotNull(user);
         testId(user);
     }
 
     @Test
-    void shouldGetUserById() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void USER02_shouldGetUserById() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
-        Object found = carParkService.getCarPark(getFieldValue(user, "id", Long.class));
+        Object found = carParkService.getUser(getFieldValue(user, "id", Long.class));
         assertNotNull(found);
         assertEquals(getFieldValue(user, "id"), getFieldValue(found, "id"));
     }
 
     @Test
-    void shouldGetUserByEmail() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void USER03_shouldGetUserByEmail() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
-        Object found = carParkService.getCarPark(TestData.User.email);
+        Object found = carParkService.getUser(TestData.User.email);
         assertNotNull(found);
         assertEquals(getFieldValue(user, "id"), getFieldValue(found, "id"));
     }
 
     @Test
-    void shouldGetAllUsers() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void USER04_shouldGetAllUsers() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
         List<Object> users = carParkService.getUsers();
         assertNotNull(users);
@@ -88,9 +87,9 @@ class CarParkServiceTest {
     }
 
     @Test
-    void shouldUpdateUserByChangingEmail() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void USER05_shouldUpdateUserByChangingEmail() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
-        if (!hasField(user, "email")) {
+        if (hasField(user, "email")) {
             String newEmail = "jozko.je.super@example.com";
             setFieldValue(user, "email", newEmail);
             Object updated = carParkService.updateUser(user);
@@ -103,7 +102,7 @@ class CarParkServiceTest {
     }
 
     @Test
-    void shouldDeleteUser() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void USER06_shouldDeleteUser() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
         assertNotNull(user);
         Object deleted = carParkService.deleteUser(getFieldValue(user, "id", Long.class));
@@ -113,32 +112,78 @@ class CarParkServiceTest {
     }
 
     @Test
-    void shouldCreateCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
-
-        Object car = carParkService.createCar(getFieldValue(user, "id", Long.class),
-                TestData.Car.brand, TestData.Car.model, TestData.Car.colour, TestData.Car.ecv);
+    void CAR01_shouldCreateCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
         assertNotNull(car);
         testId(car);
         if (hasField(car, "user")) {
             Object carUser = getFieldValue(car, "user");
             assertNotNull(carUser);
-            assertEquals(getFieldValue(user, "id", Long.class), getFieldValue(carUser, "id", Long.class));
+            Object foundUser = carParkService.getUser(getFieldValue(carUser, "id", Long.class));
+            assertNotNull(foundUser);
         }
     }
 
-    void testId(Object obj) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Long id = getFieldValue(obj, "id", Long.class);
-        assertEquals(Long.class, id.getClass());
-        assertTrue(id > 0);
+    private Object createNewCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
+        return carParkService.createCar(getFieldValue(user, "id", Long.class),
+                TestData.Car.brand, TestData.Car.model, TestData.Car.colour, TestData.Car.ecv);
     }
 
-    private static void runSQLStatement(Connection con, String sql) {
-        try (Statement stmt = con.createStatement()) {
-            stmt.executeUpdate(sql);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+    @Test
+    void CAR02_shouldGetCarById() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
+        Object found = carParkService.getCar(getFieldValue(car, "id", Long.class));
+        assertNotNull(found);
+        assertEquals(getFieldValue(car, "id"), getFieldValue(found, "id"));
+    }
+
+    @Test
+    void CAR02_shouldGetCarByECV() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
+        Object found = carParkService.getCar(TestData.Car.ecv);
+        assertNotNull(found);
+        assertEquals(getFieldValue(car, "id"), getFieldValue(found, "id"));
+    }
+
+    @Test
+    void CAR04_shouldGetCarsByUser() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
+        List<Object> users = carParkService.getUsers();
+        assertEquals(1, users.size());
+        List<Object> cars = carParkService.getCars(getFieldValue(users.get(0), "id", Long.class));
+        assertNotNull(cars);
+        assertEquals(1, cars.size());
+        assertEquals(car.getClass(), cars.get(0).getClass());
+        assertEquals(getFieldValue(car, "id"), getFieldValue(cars.get(0), "id"));
+    }
+
+    @Test
+    void CAR05_shouldUpdateCarBrandAndModel() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
+        if (hasField(car, "brand") && hasField(car, "model")) {
+            String newBrand = "Porsche";
+            String newModel = "911 GTS";
+
+            setFieldValue(car, "brand", newBrand);
+            setFieldValue(car, "model", newModel);
+            Object updated = carParkService.updateCar(car);
+            assertNotNull(updated);
+            assertEquals(newBrand, getFieldValue(updated, "brand", String.class));
+            assertEquals(newModel, getFieldValue(updated, "model", String.class));
+            assertEquals(getFieldValue(car, "id"), getFieldValue(updated, "id"));
+        } else {
+            fail("Car object does not have a brand and a model property. So this test cannot be performed!");
         }
+    }
+
+    @Test
+    void CAR06_shouldDeleteCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Object car = createNewCar();
+        Object deleted = carParkService.deleteCar(getFieldValue(car, "id", Long.class));
+        assertNotNull(deleted);
+        Object notFound = carParkService.getCar(TestData.Car.ecv);
+        assertNull(notFound);
     }
 
 }

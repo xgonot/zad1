@@ -5,10 +5,8 @@ import sk.stuba.fei.uim.vsa.pr1.domain.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 public class CarParkService extends AbstractCarParkService {
 
@@ -137,73 +135,123 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object getCar(Long carId) {
-        return null;
+        if (carId == null) return null;
+        EntityManager em = emf.createEntityManager();
+        Car car = em.find(Car.class, carId);
+        em.close();
+        return car;
     }
 
     @Override
     public Object getCar(String vehicleRegistrationPlate) {
-        return null;
+        if (vehicleRegistrationPlate == null) return null;
+        EntityManager em = emf.createEntityManager();
+        Car car = null;
+        try {
+            TypedQuery<Car> query = em.createQuery("select c from Car c where c.vrp = '" + vehicleRegistrationPlate + "'", Car.class);
+            car = query.getSingleResult();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        em.close();
+        return car;
     }
 
     @Override
     public List<Object> getCars(Long userId) {
-        return null;
+        if (userId == null) return new ArrayList<>();
+        EntityManager em = emf.createEntityManager();
+        List<Car> cars = new ArrayList<>();
+        try {
+            User user = em.find(User.class, userId);
+            if (user == null) throw new IllegalStateException("Cannot find user with id: " + userId);
+            TypedQuery<Car> query = em.createQuery("select c from Car c where c.user.id = " + userId, Car.class);
+            cars = query.getResultList();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        em.close();
+        return Arrays.asList(cars.toArray());
     }
 
     @Override
     public Object updateCar(Object car) {
-        return null;
+        if (car == null) return null;
+        Car c = (Car) car;
+        if (c.getId() == null) return null;
+        // TODO ošetriť existenciu
+        return runTransaction(em -> em.merge(c));
     }
 
     @Override
     public Object deleteCar(Long carId) {
-        return null;
+        if (carId == null) return null;
+        return runTransaction(em -> {
+            Car car = em.find(Car.class, carId);
+            if (car == null) return null;
+            em.remove(car);
+            return car;
+        });
     }
 
     @Override
     public Object createUser(String firstname, String lastname, String email) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
+        return runTransaction(em -> {
             User user = new User(firstname, lastname, email);
             em.persist(user);
-            em.getTransaction().commit();
             return user;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (em.getTransaction().isActive())
-                em.getTransaction().rollback();
-        } finally {
-            em.close();
-        }
-        return null;
+        });
     }
 
     @Override
     public Object getUser(Long userId) {
-        return null;
+        EntityManager em = emf.createEntityManager();
+        User user = em.find(User.class, userId);
+        em.close();
+        return user;
     }
 
     @Override
     public Object getUser(String email) {
-        return null;
+        EntityManager em = emf.createEntityManager();
+        User user = null;
+        try {
+            TypedQuery<User> query = em.createQuery("select u from User u where u.email = '" + email + "'", User.class);
+            user = query.getSingleResult();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        em.close();
+        return user;
     }
 
     @Override
     public List<Object> getUsers() {
         EntityManager em = emf.createEntityManager();
         TypedQuery<User> query = em.createQuery("select u from User u", User.class);
-        return Arrays.asList(query.getResultList().toArray());
+        List<User> users = query.getResultList();
+        em.close();
+        return Arrays.asList(users.toArray());
     }
 
     @Override
     public Object updateUser(Object user) {
-        return null;
+        if (user == null) return null;
+        User u = (User) user;
+        if (u.getId() == null) return null;
+        // TODO ošetriť či user vôbec existuje
+        return runTransaction(em -> em.merge(u));
     }
 
     @Override
     public Object deleteUser(Long userId) {
-        return null;
+        if (userId == null) return null;
+        return runTransaction(em -> {
+            User u = em.find(User.class, userId);
+            if (u == null) return null;
+            em.remove(u);
+            return u;
+        });
     }
 
     @Override
@@ -314,5 +362,21 @@ public class CarParkService extends AbstractCarParkService {
     @Override
     public Object deleteHoliday(Long holidayId) {
         return null;
+    }
+
+    private Object runTransaction(Function<EntityManager, Object> operation) {
+        EntityManager em = emf.createEntityManager();
+        Object obj = null;
+        try {
+            em.getTransaction().begin();
+            obj = operation.apply(em);
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+        }
+        em.close();
+        return obj;
     }
 }
