@@ -91,7 +91,9 @@ public abstract class AbstractCarParkService {
      * @param floorIdentifier identifikátor poschodia
      * @return objekt entity poschodia
      */
-    public abstract Object getCarParkFloor(Long carParkId, String floorIdentifier);
+    public Object getCarParkFloor(Long carParkId, String floorIdentifier) {
+        throw new UnsupportedOperationException("CarParkFloor must have composite primary key to enable this feature");
+    }
 
     /**
      * Získanie entity poschodia parkovacieho domu podľa auto-generovaného id.
@@ -120,12 +122,25 @@ public abstract class AbstractCarParkService {
 
     /**
      * Vymazanie poschodia v parkovacom dome
+     * Implementovanie entity CarParkFloor pomocou kompozitného kľúča bude ohodnotené bonusovými bodmi.
+     * Implementujte iba v prípade, že nebude implementovať metódu {@link #deleteCarPark(Long) deleteCarParkFloor(Long carParkFloorId)}
      *
      * @param carParkId       id parkovacieho domu
      * @param floorIdentifier identifikátor poschodia
      * @return vymazaná entita poschodia
      */
-    public abstract Object deleteCarParkFloor(Long carParkId, String floorIdentifier);
+    public Object deleteCarParkFloor(Long carParkId, String floorIdentifier) {
+        throw new UnsupportedOperationException("CarParkFloor must have composite primary key to enable this feature");
+    }
+
+    /**
+     * Vymazanie poschodia v parkovacom dome.
+     * Implementujte iba v prípade, že sa rozhodnete neriešiť kompozitný primárny kľúč pre poschodie.
+     *
+     * @param carParkFloorId id poschodia parkovacieho domu
+     * @return vymazaná entita poschodia
+     */
+    public abstract Object deleteCarParkFloor(Long carParkFloorId);
 
 
     // Parkovacie miesto

@@ -19,6 +19,21 @@ public class TestUtils {
         return fieldType.cast(getFieldValue(obj, field));
     }
 
+    static Object setFieldValue(Object obj, String field, Object newValue) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method setter = obj.getClass().getMethod("set" + capitalize(field), newValue.getClass());
+        setter.invoke(obj, newValue);
+        return obj;
+    }
+
+    static boolean hasField(Object obj, String field) {
+        try {
+            Method getter = obj.getClass().getMethod("get" + capitalize(field));
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
     static String capitalize(String str) {
         if (str.length() == 0) return "";
         if (str.length() == 1) return str.toUpperCase();

@@ -77,6 +77,11 @@ public class CarParkService extends AbstractCarParkService {
     }
 
     @Override
+    public Object deleteCarParkFloor(Long carParkFloorId) {
+        return null;
+    }
+
+    @Override
     public Object createParkingSpot(Long carParkId, String floorIdentifier, String spotIdentifier) {
         return null;
     }
