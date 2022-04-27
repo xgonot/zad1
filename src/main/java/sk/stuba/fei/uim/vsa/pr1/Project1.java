@@ -1,5 +1,7 @@
 package sk.stuba.fei.uim.vsa.pr1;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,13 @@ public class Project1 {
         Object carO = c.createCar(user.getId(), "HONDA", "CIVIC", "RED", "BA781AH");
         
         Car car = (Car) carO;
+        SimpleDateFormat formater = new SimpleDateFormat("dd-MM-yyyy");  
+        try {
+             c.createHoliday("Vianoce", formater.parse("27-04-2000"));
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+        }
+       
         
         Object p = c.createCarPark("A", "a", 10);
         CarPark carPark = (CarPark) p;
@@ -42,7 +51,7 @@ public class Project1 {
         
         Reservation r = (Reservation) c.createReservation(parkingSpot.getId(), car.getId());
         
-        LocalDateTime now = LocalDateTime.now().minusHours(5).minusMinutes(3);
+        LocalDateTime now = LocalDateTime.now().minusHours(10).minusMinutes(3);
         r.setStartsAt(now);
         c.updateReservation((Object)r);
         

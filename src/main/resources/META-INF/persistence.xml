@@ -8,6 +8,7 @@
     <class>sk.stuba.fei.uim.vsa.pr1.domain.CarParkFloor</class>
     <class>sk.stuba.fei.uim.vsa.pr1.domain.ParkingSpot</class>
     <class>sk.stuba.fei.uim.vsa.pr1.domain.Reservation</class>
+    <class>sk.stuba.fei.uim.vsa.pr1.domain.Holiday</class>
     <properties>
       <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/VSA_PR1"/>

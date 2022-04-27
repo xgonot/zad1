@@ -25,7 +25,6 @@ public class Reservation implements Serializable {
      @GeneratedValue(strategy=GenerationType.AUTO)
      private Long id;
      
-    @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime startsAt;
      
      
@@ -146,8 +145,8 @@ public class Reservation implements Serializable {
         }
         
         this.price = new Long(diff).doubleValue() * pricePerHour;
-        
-        this.price-= (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
+        Double holidayPrice = (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
+        this.price-= holidayPrice;
     }
 
     
