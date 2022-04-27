@@ -1,13 +1,26 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
+<<<<<<< HEAD
+=======
+import java.io.Serializable;
+>>>>>>> f9574ef (Implemention)
 import javax.persistence.*;
 
 @Entity
 @Table(name = "CAR")
+<<<<<<< HEAD
 public class Car {
 
     @Id
     @GeneratedValue
+=======
+public class Car implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+>>>>>>> f9574ef (Implemention)
     private Long id;
 
     private String brand;
