@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public class CarParkService extends AbstractCarParkService {
     
-    public static boolean useHoliday = false;
+    public static boolean useHoliday = true;
     
     public CarParkService() {
         super();
@@ -971,12 +971,12 @@ public class CarParkService extends AbstractCarParkService {
        boolean useFullYear = false;
        List<LocalDate> inList = new ArrayList();
        if (start.getYear() == end.getYear()) {
-           inList.add(startDate);
+           inList.add(startDate.withYear(1));
            if (start.getDayOfYear() != end.getDayOfYear()) {
                for(LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
                    inList.add(d.withYear(1));
                }
-               inList.add(endDate);
+               inList.add(endDate.withYear(1));
            }  
        } else {
            if (end.getYear() - start.getYear() == 1) {
@@ -1012,12 +1012,12 @@ public class CarParkService extends AbstractCarParkService {
        
        if (startDate.equals(endDate)) {
            if (holidays.contains(startDate.withYear(1))) {
-                holidayMinutes = ChronoUnit.MINUTES.between(end, start);
+                holidayMinutes = ChronoUnit.MINUTES.between(start, end);
            }
        } else {
            LocalDateTime dayAfter = start.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
            if (holidays.contains(startDate.withYear(1))) {
-                holidayMinutes = ChronoUnit.MINUTES.between(dayAfter, start);
+                holidayMinutes = ChronoUnit.MINUTES.between(start, dayAfter);
            }
            LocalDateTime endDayStart = end.withHour(0).withMinute(0).withSecond(0).withNano(0);
            for (LocalDateTime d = dayAfter; d.isBefore(endDayStart); d = d.plusDays(1)) {
@@ -1025,8 +1025,8 @@ public class CarParkService extends AbstractCarParkService {
                    holidayMinutes+= 24*60;
                }
            }
-           if (holidays.contains(end.withYear(0).toLocalDate())) {
-               holidayMinutes+= ChronoUnit.MINUTES.between(end, endDayStart);
+           if (holidays.contains(end.withYear(1).toLocalDate())) {
+               holidayMinutes+= ChronoUnit.MINUTES.between(endDayStart, end);
            }
        }
        
