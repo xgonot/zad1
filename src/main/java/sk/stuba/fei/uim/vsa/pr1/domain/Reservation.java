@@ -39,14 +39,14 @@ public class Reservation implements Serializable {
         this.id = id;
     }
     
-    private Integer price = null;
+    private Double price = null;
 
     /**
      * Get the value of price
      *
      * @return the value of price
      */
-    public Integer getPrice() {
+    public Double getPrice() {
         return price;
     }
 
@@ -55,7 +55,7 @@ public class Reservation implements Serializable {
      *
      * @param price new value of price
      */
-    public void setPrice(Integer price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
@@ -130,7 +130,24 @@ public class Reservation implements Serializable {
             diff++;
         }
         
-        this.price = new Long(diff).intValue() * pricePerHour;
+        this.price = new Long(diff).doubleValue() * pricePerHour;
+    }
+    
+     public void endReservation(long holidayHours)
+    {
+        LocalDateTime now = LocalDateTime.now();
+        int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
+        
+        this.endsAt = now;
+        long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
+        long minDiff = ChronoUnit.MINUTES.between(this.startsAt, this.endsAt);
+        if (minDiff > 0) {
+            diff++;
+        }
+        
+        this.price = new Long(diff).doubleValue() * pricePerHour;
+        
+        this.price-= (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
     }
 
     

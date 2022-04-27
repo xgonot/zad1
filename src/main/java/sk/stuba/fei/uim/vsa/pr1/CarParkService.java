@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import sk.stuba.fei.uim.vsa.pr1.domain.*;
 
 
@@ -17,7 +18,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CarParkService extends AbstractCarParkService {
-
+    
+    public static boolean useHoliday = false;
+    
     public CarParkService() {
         super();
     }
@@ -129,7 +132,15 @@ public class CarParkService extends AbstractCarParkService {
         List<Reservation> reservations = resQuery.getResultList();
         for (Reservation res: reservations) {
             if (res.getEndsAt() != null) {
-                res.endReservation();
+                if (CarParkService.useHoliday) {
+                     LocalDateTime now = LocalDateTime.now();
+                     res.endReservation(this.getHolidayMintes(res.getStartsAt(), now, em));
+                } else {
+                     res.endReservation();
+                }
+               
+                
+               
             }
             res.setParkingSpot(null);
             em.merge(res);
@@ -238,7 +249,12 @@ public class CarParkService extends AbstractCarParkService {
             for (Reservation r: reservations) {
                 //r.setEndsAt(now);
                 if (r.getEndsAt() == null) {
-                    r.endReservation();
+                    if (CarParkService.useHoliday) {
+                        LocalDateTime now = LocalDateTime.now();
+                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    } else {
+                         r.endReservation();
+                    }
                 }
                 r.setParkingSpot(null);
                 em.merge(r);
@@ -438,7 +454,12 @@ public class CarParkService extends AbstractCarParkService {
          List<Reservation> list = resQuery.getResultList();
          for (Reservation r: list) {
              if (r.getEndsAt() == null) {
-                 r.endReservation();
+                 if (CarParkService.useHoliday) {
+                        LocalDateTime now = LocalDateTime.now();
+                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    } else {
+                         r.endReservation();
+                    }
              }
             //r.endReservation();
             r.setParkingSpot(null);
@@ -555,7 +576,12 @@ public class CarParkService extends AbstractCarParkService {
         List<Reservation> res = resQuery.getResultList();
         for (Reservation r: res) {
             if (r.getEndsAt() == null) {
-                r.endReservation();
+                if (CarParkService.useHoliday) {
+                        LocalDateTime now = LocalDateTime.now();
+                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    } else {
+                         r.endReservation();
+                    }
             }
             //r.endReservation();
             r.setCar(null);
@@ -671,7 +697,12 @@ public class CarParkService extends AbstractCarParkService {
         List<Reservation> res = q.getResultList();
         for (Reservation r:  res) {
             if (r.getEndsAt() == null) {
-                r.endReservation();
+                if (CarParkService.useHoliday) {
+                        LocalDateTime now = LocalDateTime.now();
+                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    } else {
+                         r.endReservation();
+                    }
             }
             r.setCar(null);
             em.merge(r);
@@ -733,7 +764,12 @@ public class CarParkService extends AbstractCarParkService {
             em.close();
             return null;
          }
-         r.endReservation();
+         if (CarParkService.useHoliday) {
+            LocalDateTime now = LocalDateTime.now();
+            r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+        } else {
+             r.endReservation();
+        }
          em.merge(r);
          em.getTransaction().commit();
          em.close();
@@ -864,22 +900,65 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createHoliday(String name, Date date) {
-        return null;
+         EntityManager em = emf.createEntityManager();
+         em.getTransaction().begin();
+         try {
+             Holiday h = new Holiday();
+             h.setName(name);
+             h.setDay(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withYear(1));
+             em.persist(h);
+             em.getTransaction().commit();
+             em.close();
+             return h;
+         } catch (Exception e) {
+             if (em.getTransaction().isActive()) {
+                 em.getTransaction().rollback();
+             }
+             em.close();
+             return null;
+         }
     }
 
     @Override
     public Object getHoliday(Date date) {
-        return null;
+        if (date == null) {
+            return null;
+        }
+        LocalDate d = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withYear(1);
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Object> q = em.createQuery("SELECT h FROM Holiday h WHERE h.day = :selectedDate", Object.class);
+        q.setParameter("selectedDate", d);
+        List<Object> holidays = q.getResultList();
+        em.close();
+        return holidays;
     }
 
     @Override
     public List<Object> getHolidays() {
-        return null;
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Object> q = em.createQuery("SELECT h FROM Holiday h", Object.class);
+        List<Object> holidays = q.getResultList();
+        em.close();
+        return holidays;
     }
 
     @Override
     public Object deleteHoliday(Long holidayId) {
-        return null;
+        if (holidayId == null) {
+            return null;
+        }
+         EntityManager em = emf.createEntityManager();
+         em.getTransaction().begin();
+         Holiday h = em.find(Holiday.class, holidayId);
+         if (h == null) {
+             em.getTransaction().rollback();
+             em.close();
+             return null;
+         }
+         em.remove(h);
+         em.getTransaction().commit();
+         em.close();
+         return h;
     }
     
     private Object runTransaction(Function<EntityManager, Object> operation) {
@@ -896,5 +975,83 @@ public class CarParkService extends AbstractCarParkService {
         }
         em.close();
         return obj;
+    }
+    
+    private long getHolidayMintes(LocalDateTime start, LocalDateTime end, EntityManager em)
+    {
+        LocalDate startDate = start.toLocalDate();
+        LocalDate endDate = end.toLocalDate();
+       if (endDate.isBefore(startDate)) {
+           return 0;
+       }
+       boolean useFullYear = false;
+       List<LocalDate> inList = new ArrayList();
+       if (start.getYear() == end.getYear()) {
+           inList.add(startDate);
+           if (start.getDayOfYear() != end.getDayOfYear()) {
+               for(LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
+                   inList.add(d.withYear(1));
+               }
+               inList.add(endDate);
+           }  
+       } else {
+           if (end.getYear() - start.getYear() == 1) {
+               LocalDate startWithoutYear = startDate.withYear(1);
+               LocalDate endWithoutYear = endDate.withYear(1);
+               if (endWithoutYear.isAfter(startWithoutYear)) {
+                   useFullYear = true;
+               } else {
+                   LocalDate endYear = endWithoutYear.withMonth(12).withDayOfMonth(31);
+                   for(LocalDate d = startWithoutYear; d.isBefore(endYear); d = d.plusDays(1)) {
+                        inList.add(d);
+                    }
+                    inList.add(endYear);
+                    LocalDate startYear = startWithoutYear.withDayOfMonth(1).withMonth(1);
+                    for(LocalDate d = startYear; d.isBefore(endWithoutYear); d = d.plusDays(1)) {
+                        inList.add(d);
+                    }
+                    inList.add(endWithoutYear);
+               }
+           }
+       }
+        List<LocalDate> holidays = null;
+       if (useFullYear) {
+           TypedQuery<LocalDate> q = em.createQuery("SELECT h.day from Holiday h", LocalDate.class);
+           holidays = q.getResultList();
+       } else {
+            TypedQuery<LocalDate> q = em.createQuery("SELECT h.day from Holiday h WHERE h.day IN :inDates", LocalDate.class);
+            q.setParameter("inDates", inList);
+            holidays = q.getResultList();
+       }
+       
+       long holidayMinutes = 0;
+       
+       if (startDate.equals(endDate)) {
+           if (holidays.contains(startDate.withYear(1))) {
+                holidayMinutes = ChronoUnit.MINUTES.between(end, start);
+           }
+       } else {
+           LocalDateTime dayAfter = start.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+           if (holidays.contains(startDate.withYear(1))) {
+                holidayMinutes = ChronoUnit.MINUTES.between(dayAfter, start);
+           }
+           LocalDateTime endDayStart = end.withHour(0).withMinute(0).withSecond(0).withNano(0);
+           for (LocalDateTime d = dayAfter; d.isBefore(endDayStart); d = d.plusDays(1)) {
+               if (holidays.contains(d.withYear(1).toLocalDate())) {
+                   holidayMinutes+= 24*60;
+               }
+           }
+           if (holidays.contains(end.withYear(0).toLocalDate())) {
+               holidayMinutes+= ChronoUnit.MINUTES.between(end, endDayStart);
+           }
+       }
+       
+       long holidayHours = holidayMinutes / 60;
+       if (holidayMinutes % 60 > 0) {
+           holidayHours++;
+       }
+       return holidayHours;
+       
+       
     }
 }
