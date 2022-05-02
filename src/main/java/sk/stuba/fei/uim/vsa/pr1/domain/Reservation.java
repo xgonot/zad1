@@ -1,8 +1,5 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-<<<<<<< HEAD
-public class Reservation {
-=======
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -148,7 +145,4 @@ public class Reservation implements Serializable {
         Double holidayPrice = (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
         this.price-= holidayPrice;
     }
-
-    
->>>>>>> f9574ef (Implemention)
 }

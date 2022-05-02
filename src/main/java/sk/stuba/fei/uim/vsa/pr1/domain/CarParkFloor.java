@@ -1,8 +1,5 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-<<<<<<< HEAD
-public class CarParkFloor {
-=======
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -55,6 +52,4 @@ public class CarParkFloor implements Serializable {
         }
         return this;
     }
-    
->>>>>>> f9574ef (Implemention)
 }

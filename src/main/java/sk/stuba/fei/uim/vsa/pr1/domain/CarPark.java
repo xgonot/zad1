@@ -1,8 +1,5 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-<<<<<<< HEAD
-public class CarPark {
-=======
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -101,8 +98,4 @@ public class CarPark implements Serializable{
     public void setPricePerHour(Integer pricePerHour) {
         this.pricePerHour = pricePerHour;
     }
-    
-    
-
->>>>>>> f9574ef (Implemention)
 }
