@@ -1,8 +1,5 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-<<<<<<< HEAD
-public class ParkingSpot {
-=======
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -68,7 +65,4 @@ public class ParkingSpot implements Serializable {
     public void setCarParkFloor(CarParkFloor carParkFloor) {
         this.carParkFloor = carParkFloor;
     }
-    
-    
->>>>>>> f9574ef (Implemention)
 }
