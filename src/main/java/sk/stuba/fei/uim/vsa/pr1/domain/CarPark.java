@@ -29,7 +29,7 @@ public class CarPark implements Serializable{
     private Integer pricePerHour;
     
     @OneToMany(mappedBy = "carPark")
-    private List<CarParkFloor> carParkFloorList = new ArrayList<>();
+    private final List<CarParkFloor> carParkFloorList = new ArrayList<>();
 
     public List<CarParkFloor> getCarParkFloorList() {
         return carParkFloorList;
