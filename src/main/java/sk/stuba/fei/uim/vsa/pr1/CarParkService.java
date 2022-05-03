@@ -219,6 +219,7 @@ public class CarParkService extends AbstractCarParkService {
 
          EntityManager em = emf.createEntityManager();
          TypedQuery<Object> q = em.createQuery("SELECT c FROM CarParkFloor c WHERE c.embeddedId.carParkId = :carParkId", Object.class);
+         q.setParameter("carParkId", carParkId);
          List<Object> result = q.getResultList();
          em.close();
          return result;
