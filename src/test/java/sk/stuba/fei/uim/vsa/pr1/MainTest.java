@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -790,7 +791,7 @@ public class MainTest {
     }
     
     @Test
-    public void getParkingFloorWithoutTypeTest()
+    public void createAndGetParkingFloorWithoutTypeTest()
     {
         try {
             Object carPark = MainTest.carService.createCarPark("test7", "testtest", 12);
@@ -847,6 +848,125 @@ public class MainTest {
             assertNotNull(parkingSpotIdentifier);
             
             assertEquals(spotIdentifier, parkingSpotIdentifier);
+            
+            
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+    
+    public void getAllParkingSlotsWithoutType()
+    {
+        try {
+            Object carPark = MainTest.carService.createCarPark("test8", "testtest", 12);
+            assertNotNull(carPark);
+            Class c = carPark.getClass();
+            Method[] methods = c.getMethods();
+            Method getId = null;
+            for (Method m: methods) {
+                if (m.getReturnType() == Long.class) {
+                   getId = m;
+                   break;
+                }
+            }
+            assertNotNull(getId);
+            Long id = (Long) getId.invoke(carPark);
+            assertNotNull(id);
+            
+            Object carParkFloor = MainTest.carService.createCarParkFloor(id, "Floor3-1");
+            assertNotNull(carParkFloor);
+            
+            Object spot1 = MainTest.carService.createParkingSpot(id, "Floor3-1", "1.01");
+            assertNotNull(spot1);
+            
+            Method getParkingSpotId = null;
+            Method getParkingSpotIdentifier = null;
+            Class parkingSpotClass = spot1.getClass();
+            
+            for (Method m: parkingSpotClass.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getParkingSpotId = m;
+                    } else if (m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                        getParkingSpotIdentifier = m;
+                    }
+                }
+            }
+            
+            assertNotNull(getParkingSpotId);
+            assertNotNull(getParkingSpotIdentifier);
+            
+            Long spotId = (Long) getParkingSpotId.invoke(spot1);
+            assertNotNull(spotId);
+            
+            Object carParkSpot = MainTest.carService.getParkingSpot(spotId);
+            assertNotNull(carParkSpot);
+            
+            Long carParkSpotId = (Long) getParkingSpotId.invoke(carParkSpot);
+            assertNotNull(carParkSpotId);
+            
+            String spotIdentifier = (String) getParkingSpotIdentifier.invoke(spot1);
+            String parkingSpotIdentifier = (String) getParkingSpotIdentifier.invoke(carParkSpot);
+            
+            assertNotNull(spotIdentifier);
+            assertNotNull(parkingSpotIdentifier);
+            
+            assertEquals(spotIdentifier, parkingSpotIdentifier);
+            
+            Object parkingSpot2 = MainTest.carService.createParkingSpot(carParkSpotId, "Floor3-1", "1.02");
+             assertNotNull(parkingSpot2);
+            Long parkingSpot2Id = (Long) getParkingSpotId.invoke(parkingSpot2);
+            assertNotNull(parkingSpot2Id);
+            Object spot2 = MainTest.carService.getParkingSpot(parkingSpot2Id);
+            assertNotNull(spot2);
+            Long spot2Id = (Long) getParkingSpotId.invoke(spot2);
+            assertNotNull(spot2Id);
+            
+            assertEquals(parkingSpot2Id, spot2Id);
+            
+            Object carParkFloor2 = MainTest.carService.createCarParkFloor(id, "Floor3-2");
+            assertNotNull(carParkFloor2);
+            Object parkingSpot3 = MainTest.carService.createParkingSpot(carParkSpotId, "Floor3-2", "2.01");
+            assertNotNull(parkingSpot3);
+            
+            Long parkingSpot3Id = (Long) getParkingSpotId.invoke(parkingSpot3);
+            assertNotNull(parkingSpot3Id);
+            
+            Map<String, List<Object>> parkFloors = MainTest.carService.getParkingSpots(id);
+            assertNotNull(parkFloors);
+            Set<Map.Entry<String, List<Object>>> parkFloorsEntrySet = parkFloors.entrySet();
+            assertEquals(parkFloorsEntrySet.size(), 2);
+            
+            List<Object> firstFloorSpots = parkFloors.get("Floor3-1");
+            assertNotNull(firstFloorSpots);
+            assertEquals(firstFloorSpots.size(), 2);
+            
+            Long firstFloorFirstSpotId = (Long) getParkingSpotId.invoke(firstFloorSpots.get(0));
+            Long firstFloorSecondSpotId = (Long) getParkingSpotId.invoke(firstFloorSpots.get(1));
+            assertNotNull(firstFloorFirstSpotId);
+            assertNotNull(firstFloorSecondSpotId);
+            
+            if (firstFloorFirstSpotId.equals(carParkSpotId)) {
+                if (! firstFloorSecondSpotId.equals(spot2Id)) {
+                    assertTrue(false);
+                }
+            } else if (firstFloorFirstSpotId.equals(spot2Id)) {
+                if (! firstFloorSecondSpotId.equals(carParkSpotId)) {
+                    assertTrue(false);
+                }
+            } else {
+                assertTrue(false);
+            }
+            
+            List<Object> secondFloorSpots = parkFloors.get("Floor3-2");
+            assertNotNull(secondFloorSpots);
+            assertEquals(secondFloorSpots.size(), 1);
+            
+            Object secondFloorSpot = secondFloorSpots.get(0);
+            Long secondFloorSpotId = (Long) getParkingSpotId.invoke(secondFloorSpot);
+            assertNotNull(secondFloorSpotId);
+            
+            assertEquals(secondFloorSpotId, parkingSpot3Id);
             
             
         } catch (Exception e) {
