@@ -973,5 +973,435 @@ public class MainTest {
             assertTrue(false);
         }
     }
+    
+    @Test
+    public void creareUserTest()
+    {
+        try {
+            Object user = MainTest.carService.createUser("TestUser", "UserTest", "user-test@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getUserId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object usr = MainTest.carService.getUser(userId);
+            assertNotNull(usr);
+            Long usrId = (Long) getUserId.invoke(usr);
+            assertNotNull(usrId);
+            
+            assertEquals(userId, usrId);
+            
+            for (Method m: stringMethods) {
+                String s1 =(String) m.invoke(user);
+                String s2 = (String) m.invoke(usr);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+            
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+    
+    @Test
+    public void getUserByEmailTest()
+    {
+        try {
+            Object user = MainTest.carService.createUser("TestUser2", "UserTest2", "user-test2@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getUserId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object usr = MainTest.carService.getUser("user-test2@test.com");
+            assertNotNull(usr);
+            Long usrId = (Long) getUserId.invoke(usr);
+            assertNotNull(usrId);
+            
+            assertEquals(userId, usrId);
+            
+            for (Method m: stringMethods) {
+                String s1 =(String) m.invoke(user);
+                String s2 = (String) m.invoke(usr);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+            Object user2 = MainTest.carService.createUser("TestUser3", "UserTest3", "user-test3@test.com");
+            assertNotNull(user2);
+            Long user2Id =(Long) getUserId.invoke(user2);
+            assertNotNull(user2Id);
+            
+            Object usr2 = MainTest.carService.getUser("user-test3@test.com");
+            assertNotNull(usr2);
+            Long usr2Id = (Long) getUserId.invoke(usr2);
+            assertNotNull(usr2Id);
+            
+            assertEquals(user2Id, usr2Id);
+            
+            for (Method m: stringMethods) {
+                String s1 = (String) m.invoke(user2);
+                String s2 = (String) m.invoke(usr2);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1, s2);
+            }
+            
+            
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+    
+    public void getAllUsersTest()
+    {
+        
+    }
+    
+    @Test
+    public void updateUserTest()
+    {
+        try {
+            Object user = MainTest.carService.createUser("TestUser4", "UserTest4", "user-test4@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            List<Method> stringMethods = new ArrayList<>();
+            List<Method> stringSetterMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }
+                } else if (m.getParameterCount() == 1) {
+                    Class[] params = m.getParameterTypes();
+                    if (params[0] == String.class) {
+                        stringSetterMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getUserId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object usr = MainTest.carService.getUser("user-test4@test.com");
+            assertNotNull(usr);
+            Long usrId = (Long) getUserId.invoke(usr);
+            assertNotNull(usrId);
+            
+            assertEquals(userId, usrId);
+            
+            for (Method m: stringMethods) {
+                String s1 =(String) m.invoke(user);
+                String s2 = (String) m.invoke(usr);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+            for (Method m: stringSetterMethods) {
+                m.invoke(user, "user-test5@test.com");
+            }
+            
+            usr = MainTest.carService.updateUser(user);
+            assertNotNull(usr);
+            for (Method m: stringMethods) {
+                String s1 =(String) m.invoke(usr);
+                assertNotNull(s1);
+                assertEquals(s1, "user-test5@test.com");
+            }
+            
+            usr = MainTest.carService.getUser(userId);
+            assertNotNull(usr);
+            for (Method m: stringMethods) {
+                String s1 =(String) m.invoke(usr);
+                assertNotNull(s1);
+                assertEquals(s1, "user-test5@test.com");
+            }
+            
+            
+            
+        } catch (Exception e) {
+            assertTrue(false);
+            
+        }
+    }
+    
+    public void deleteUserTest()
+    {
+        try {
+            
+        
+            Object user = MainTest.carService.createUser("TestUser6", "UserTest6", "user-test6@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            //List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } /*else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }*/
+                }
+            }
+            assertNotNull(getUserId);
+            //assertFalse(stringMethods.isEmpty());
+           
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            Object usr = MainTest.carService.getUser(userId);
+            
+            assertNotNull(usr);
+            
+            MainTest.carService.deleteUser(userId);
+            
+            usr = MainTest.carService.getUser(userId);
+            assertNull(usr);
+            
+            
+            
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+    
+    @Test
+    public void createCarWithoutTypeTest()
+    {
+         try {
+            Object user = MainTest.carService.createUser("TestUser7", "UserTest7", "user-test7@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            //List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } /*else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }*/
+                }
+            }
+            assertNotNull(getUserId);
+            //assertFalse(stringMethods.isEmpty());
+           
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object car = MainTest.carService.createCar(userId, "Skoda", "Rapid", "RED", "BA-111AA");
+            assertNotNull(car);
+            
+            Class carClass = car.getClass();
+            Method getCarId = null;
+            List<Method> stringMethods = new ArrayList<>();
+            for (Method m: carClass.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getCarId = m;
+                    } else if (m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                        stringMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getCarId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long carId = (Long) getCarId.invoke(car);
+            assertNotNull(carId);
+            
+            Object ca = MainTest.carService.getCar(carId);
+            assertNotNull(ca);
+            
+            Long caId = (Long) getCarId.invoke(ca);
+            assertNotNull(caId);
+            
+            assertEquals(carId, caId);
+            for (Method m: stringMethods) {
+                String s1 = (String) m.invoke(car);
+                String s2 = (String) m.invoke(ca);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+         } catch (Exception e) {
+            assertTrue(false);
+        }     
+    }
+    
+    @Test
+    public void createAndGetCarWithoutType()
+    {
+        try {
+            Object user = MainTest.carService.createUser("TestUser8", "UserTest8", "user-test8@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            //List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } /*else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }*/
+                }
+            }
+            assertNotNull(getUserId);
+            //assertFalse(stringMethods.isEmpty());
+           
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object car = MainTest.carService.createCar(userId, "Skoda", "Rapid", "RED", "BA-112AA");
+            assertNotNull(car);
+            
+            Class carClass = car.getClass();
+            Method getCarId = null;
+            List<Method> stringMethods = new ArrayList<>();
+            for (Method m: carClass.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getCarId = m;
+                    } else if (m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                        stringMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getCarId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long carId = (Long) getCarId.invoke(car);
+            assertNotNull(carId);
+            
+            Object ca = MainTest.carService.getCar("BA-112AA");
+            assertNotNull(ca);
+            
+            Long caId = (Long) getCarId.invoke(ca);
+            assertNotNull(caId);
+            
+            assertEquals(carId, caId);
+            for (Method m: stringMethods) {
+                String s1 = (String) m.invoke(car);
+                String s2 = (String) m.invoke(ca);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+         } catch (Exception e) {
+            assertTrue(false);
+        }     
+    }
+    
+    public void deleteCarTest()
+    {
+        try {
+            Object user = MainTest.carService.createUser("TestUser9", "UserTest9", "user-test9@test.com");
+            assertNotNull(user);
+            Class c = user.getClass();
+            //List<Method> stringMethods = new ArrayList<>();
+            Method getUserId = null;
+            for (Method m : c.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getUserId = m;
+                    } /*else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
+                     stringMethods.add(m);
+                    }*/
+                }
+            }
+            assertNotNull(getUserId);
+            //assertFalse(stringMethods.isEmpty());
+           
+            Long userId = (Long) getUserId.invoke(user);
+            assertNotNull(userId);
+            
+            Object car = MainTest.carService.createCar(userId, "Skoda", "Rapid", "RED", "BA-113AA");
+            assertNotNull(car);
+            
+            Class carClass = car.getClass();
+            Method getCarId = null;
+            List<Method> stringMethods = new ArrayList<>();
+            for (Method m: carClass.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getCarId = m;
+                    } else if (m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                        stringMethods.add(m);
+                    }
+                }
+            }
+            assertNotNull(getCarId);
+            assertFalse(stringMethods.isEmpty());
+            
+            Long carId = (Long) getCarId.invoke(car);
+            assertNotNull(carId);
+            
+            Object ca = MainTest.carService.getCar(carId);
+            assertNotNull(ca);
+            
+            Long caId = (Long) getCarId.invoke(ca);
+            assertNotNull(caId);
+            
+            assertEquals(carId, caId);
+            for (Method m: stringMethods) {
+                String s1 = (String) m.invoke(car);
+                String s2 = (String) m.invoke(ca);
+                assertNotNull(s1);
+                assertNotNull(s2);
+                assertEquals(s1,s2);
+            }
+            
+            MainTest.carService.deleteCar(carId);
+            try {
+                ca = MainTest.carService.getCar(carId);
+                assertNull(ca);
+            } catch (Exception e) {
+                assertTrue(true);
+            }
+            
+         } catch (Exception e) {
+            assertTrue(false);
+        }     
+    }
 }
 
