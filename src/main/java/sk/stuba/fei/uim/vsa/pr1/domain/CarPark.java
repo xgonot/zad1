@@ -1,45 +1,86 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-import javax.persistence.*;
+import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 @Entity
-@Table(name = "CARPARK")
-public class CarPark {
-
+public class CarPark implements Serializable{
+    
+    private static final long serialVersionUID = 1L;
+    
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-
-    @Column(unique = true)
+    
+    @Column(unique = true, name = "NAME")
     private String name;
-
+    
+    @Column(name="ADDRESS")
     private String address;
+    
+    @Column(name="PRICE_PER_HOUR")
+    private Integer pricePerHour;
+    
+    @OneToMany(mappedBy = "carPark")
+    private final List<CarParkFloor> carParkFloorList = new ArrayList<>();
 
-    private Double price;
-
-    public CarPark() {
+    public List<CarParkFloor> getCarParkFloorList() {
+        return carParkFloorList;
+    }
+    
+    public CarPark addCarParkFloor(CarParkFloor floor)
+    {
+        if (! this.carParkFloorList.contains(floor)) {
+            floor.setCarPark(this);
+            floor.getEmbeddedId().setCarParkId(this.id);
+            this.carParkFloorList.add(floor);
+        }
+        
+        return this;
     }
 
-    public CarPark(String name, String address, Double price) {
-        this.name = name;
-        this.address = address;
-        this.price = price;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
+    /**
+     * Get the value of name
+     *
+     * @return the value of name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the value of name
+     *
+     * @param name new value of name
+     */
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    /**
+     * Get the value of id
+     *
+     * @return the value of id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Set the value of id
+     *
+     * @param id new value of id
+     */
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getAddress() {
@@ -50,15 +91,11 @@ public class CarPark {
         this.address = address;
     }
 
-    public Double getPrice() {
-        return price;
+    public Integer getPricePerHour() {
+        return pricePerHour;
     }
 
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public void setPrice(Integer price) {
-        this.price = price.doubleValue();
+    public void setPricePerHour(Integer pricePerHour) {
+        this.pricePerHour = pricePerHour;
     }
 }
