@@ -1,6 +1,7 @@
 package sk.stuba.fei.uim.vsa.pr1;
 
 import sk.stuba.fei.uim.vsa.pr1.domain.Car;
+import sk.stuba.fei.uim.vsa.pr1.domain.CarPark;
 import sk.stuba.fei.uim.vsa.pr1.domain.User;
 
 import javax.persistence.EntityManager;
@@ -16,32 +17,55 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createCarPark(String name, String address, Integer pricePerHour) {
-        return null;
+        return runTransaction(em -> {
+            CarPark park = new CarPark(name, address, 0.0);
+            park.setPrice(pricePerHour);
+            em.persist(park);
+            return park;
+        });
     }
 
     @Override
     public Object getCarPark(Long carParkId) {
-        return null;
+        EntityManager em = emf.createEntityManager();
+        CarPark park = em.find(CarPark.class, carParkId);
+        em.close();
+        return park;
     }
 
     @Override
     public Object getCarPark(String carParkName) {
-        return null;
+        return findOne(em -> {
+            TypedQuery<CarPark> query = em.createQuery("select c from CarPark c where c.name = '" + carParkName + "'", CarPark.class);
+            return query.getSingleResult();
+        });
     }
 
     @Override
     public List<Object> getCarParks() {
-        return null;
+        return findAll(em -> {
+            TypedQuery<CarPark> query = em.createQuery("select c from CarPark c", CarPark.class);
+            return query.getResultList();
+        });
     }
 
     @Override
     public Object updateCarPark(Object carPark) {
-        return null;
+        if (carPark == null) return null;
+        CarPark park = (CarPark) carPark;
+        if (park.getId() == null) return null;
+        return runTransaction(em -> em.merge(park));
     }
 
     @Override
     public Object deleteCarPark(Long carParkId) {
-        return null;
+        if (carParkId == null) return null;
+        return runTransaction(em -> {
+            CarPark park = em.find(CarPark.class, carParkId);
+            if (park == null) return null;
+            em.remove(park);
+            return park;
+        });
     }
 
     @Override
@@ -378,5 +402,29 @@ public class CarParkService extends AbstractCarParkService {
         }
         em.close();
         return obj;
+    }
+
+    private Object findOne(Function<EntityManager, Object> queryFunction) {
+        EntityManager em = emf.createEntityManager();
+        Object obj = null;
+        try {
+            obj = queryFunction.apply(em);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        em.close();
+        return obj;
+    }
+
+    private List<Object> findAll(Function<EntityManager, List<?>> queryFunction) {
+        EntityManager em = emf.createEntityManager();
+        List<?> list = new ArrayList<>();
+        try {
+            list = queryFunction.apply(em);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        em.close();
+        return Arrays.asList(list.toArray());
     }
 }

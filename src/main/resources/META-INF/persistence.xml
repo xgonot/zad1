@@ -6,6 +6,7 @@
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>sk.stuba.fei.uim.vsa.pr1.domain.Car</class>
         <class>sk.stuba.fei.uim.vsa.pr1.domain.User</class>
+        <class>sk.stuba.fei.uim.vsa.pr1.domain.CarPark</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
