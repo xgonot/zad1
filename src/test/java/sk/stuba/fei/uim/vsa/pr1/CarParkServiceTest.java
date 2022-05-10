@@ -15,13 +15,12 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.reflections.scanners.Scanners.SubTypes;
+import static sk.stuba.fei.uim.vsa.pr1.TestData.*;
 import static sk.stuba.fei.uim.vsa.pr1.TestUtils.*;
 
 class CarParkServiceTest {
 
-    public static final String DB = "VSA_PR1";
-    public static final String USERNAME = "vsa";
-    public static final String PASSWORD = "vsa";
+
 
     private static AbstractCarParkService carParkService;
     private static Connection mysql;
@@ -81,7 +80,7 @@ class CarParkServiceTest {
     void USER01_shouldCreateUser() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
         assertNotNull(user);
-        testId(user);
+        testShouldHaveId(user);
     }
 
     @Test
@@ -139,7 +138,7 @@ class CarParkServiceTest {
     void CAR01_shouldCreateCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object car = createNewCar();
         assertNotNull(car);
-        testId(car);
+        testShouldHaveId(car);
         if (hasField(car, "user")) {
             Object carUser = getFieldValue(car, "user");
             assertNotNull(carUser);

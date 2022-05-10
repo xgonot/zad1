@@ -72,7 +72,11 @@ public class User {
         this.cars = cars;
     }
 
-    public void addCar(Car car) {
-        this.cars.add(car);
+    public User addCar(Car car) {
+        if (! this.cars.contains(car)) {
+            car.setUser(this);
+            this.cars.add(car);
+        }
+        return this;
     }
 }
