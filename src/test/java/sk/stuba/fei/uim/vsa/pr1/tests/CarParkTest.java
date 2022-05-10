@@ -34,7 +34,7 @@ class CarParkTest {
     }
 
     @Test
-    void createAndGetCarParkTest() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    void PARK01_createAndGetCarParkTest() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object carPark = carParkService.createCarPark("test1", "testtest", 12);
         assertNotNull(carPark);
         testShouldHaveId(carPark);
@@ -46,7 +46,7 @@ class CarParkTest {
     }
 
     @Test
-    public void createAndGetCarParkByName() {
+    void PARK02_createAndGetCarParkByName() {
         Object carPark = carParkService.createCarPark("CAR-PARK-NAME", "testtest", 12);
         assertNotNull(carPark);
         Class c = carPark.getClass();
@@ -80,7 +80,7 @@ class CarParkTest {
     }
 
     @Test
-    public void uniqueCarParkNameTest() {
+    void PARK03_uniqueCarParkNameTest() {
         Object carPark = carParkService.createCarPark("test2", "testtest", 12);
         try {
             Object carPark2 = carParkService.createCarPark("test2", "testtest", 12);
@@ -92,7 +92,7 @@ class CarParkTest {
 
     @Test
     @Order(1)
-    public void getCarParksTest() {
+    void PARK04_getCarParksTest() {
         Object carPark = carParkService.createCarPark("CAR-PARK-1-1", "test11", 10);
         assertNotNull(carPark);
         Class c = carPark.getClass();
@@ -174,7 +174,7 @@ class CarParkTest {
     }
 
     @Test
-    public void updateCarParkTest() {
+    void PARK05_updateCarParkTest() {
         Object carPark = carParkService.createCarPark("UPDATE-CAR-PARK-1", "test11", 10);
         assertNotNull(carPark);
         Class c = carPark.getClass();
@@ -262,7 +262,7 @@ class CarParkTest {
     }
 
     @Test
-    public void deleteCarParkTest() {
+    void PARK06_deleteCarParkTest() {
         Object carPark = carParkService.createCarPark("DELETE-CAR-PARK-1", "test11", 10);
         assertNotNull(carPark);
         Class c = carPark.getClass();

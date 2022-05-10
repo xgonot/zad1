@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import sk.stuba.fei.uim.vsa.pr1.AbstractCarParkService;
-import sk.stuba.fei.uim.vsa.pr1.MainTest;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -33,15 +32,14 @@ class CarParkFloorTest {
     }
 
     @Test
-    public void createAndGetCarParkFloorTestEmbedded()
-    {
+    void FLOOR01_createAndGetCarParkFloorTestEmbedded() {
         try {
             Object carPark = carParkService.createCarPark("test4", "testtest", 12);
             assertNotNull(carPark);
             Class c = carPark.getClass();
             Method[] methods = c.getMethods();
             Method getId = null;
-            for (Method m: methods) {
+            for (Method m : methods) {
                 if (m.getReturnType() == Long.class) {
                     getId = m;
                     break;
@@ -60,19 +58,18 @@ class CarParkFloorTest {
             Object carParkFloor2 = carParkService.createCarParkFloor(id, "Floor2");
             assertNotNull(carParkFloor2);
 
-            Object floor2 =  carParkService.getCarParkFloor(id, "Floor2");
+            Object floor2 = carParkService.getCarParkFloor(id, "Floor2");
             assertNotNull(floor2);
 
             Class floorClass = floor1.getClass();
             Class embeddedKeyClass = null;
             Method getEmbeddedKeyMethod = null;
-            for (Method m: floorClass.getMethods()) {
-                if (! Collection.class.isAssignableFrom(m.getReturnType())
+            for (Method m : floorClass.getMethods()) {
+                if (!Collection.class.isAssignableFrom(m.getReturnType())
                         && m.getReturnType() != String.class
                         && m.getReturnType() != Long.class
                         && m.getReturnType() != c
-                        && m.getParameterCount() == 0)
-                {
+                        && m.getParameterCount() == 0) {
                     embeddedKeyClass = m.getReturnType();
                     getEmbeddedKeyMethod = m;
                     break;
@@ -85,11 +82,11 @@ class CarParkFloorTest {
             Method carParkFloorEmbeddedStringMethod = null;
             Method carParkFloorEmbeddedIdMethod = null;
 
-            for (Method m: embeddedKeyClass.getMethods()) {
+            for (Method m : embeddedKeyClass.getMethods()) {
                 if (m.getParameterCount() == 0) {
                     if (m.getReturnType() == Long.class) {
                         carParkFloorEmbeddedIdMethod = m;
-                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString") ) {
+                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
                         carParkFloorEmbeddedStringMethod = m;
                     }
                 }
@@ -121,10 +118,10 @@ class CarParkFloorTest {
             );
 
 
-            String cF1 = (String)carParkFloorEmbeddedStringMethod.invoke(carParkFloor1EmbeddedKey);
-            String f1 = (String)carParkFloorEmbeddedStringMethod.invoke(floor1EmbeddedKey);
-            String cF2 = (String)carParkFloorEmbeddedStringMethod.invoke(carParkFloor2EmbeddedKey);
-            String f2 = (String)carParkFloorEmbeddedStringMethod.invoke(floor2EmbeddedKey);
+            String cF1 = (String) carParkFloorEmbeddedStringMethod.invoke(carParkFloor1EmbeddedKey);
+            String f1 = (String) carParkFloorEmbeddedStringMethod.invoke(floor1EmbeddedKey);
+            String cF2 = (String) carParkFloorEmbeddedStringMethod.invoke(carParkFloor2EmbeddedKey);
+            String f2 = (String) carParkFloorEmbeddedStringMethod.invoke(floor2EmbeddedKey);
 
             assertNotNull(cF1);
             assertNotNull(f1);
@@ -139,17 +136,16 @@ class CarParkFloorTest {
             assertTrue(false);
         }
     }
-    
+
     @Test
-    public void getAllCarParkFloorsEmbedded()
-    {
+    void FLOOR02_getAllCarParkFloorsEmbedded() {
         try {
             Object carPark = carParkService.createCarPark("test5", "testtest", 12);
             assertNotNull(carPark);
             Class c = carPark.getClass();
             Method[] methods = c.getMethods();
             Method getId = null;
-            for (Method m: methods) {
+            for (Method m : methods) {
                 if (m.getReturnType() == Long.class) {
                     getId = m;
                     break;
@@ -174,13 +170,12 @@ class CarParkFloorTest {
             Class floorClass = carParkFloor1.getClass();
             Class embeddedKeyClass = null;
             Method getEmbeddedKeyMethod = null;
-            for (Method m: floorClass.getMethods()) {
-                if (! Collection.class.isAssignableFrom(m.getReturnType())
+            for (Method m : floorClass.getMethods()) {
+                if (!Collection.class.isAssignableFrom(m.getReturnType())
                         && m.getReturnType() != String.class
                         && m.getReturnType() != Long.class
                         && m.getReturnType() != c
-                        && m.getParameterCount() == 0)
-                {
+                        && m.getParameterCount() == 0) {
                     embeddedKeyClass = m.getReturnType();
                     getEmbeddedKeyMethod = m;
                     break;
@@ -193,11 +188,11 @@ class CarParkFloorTest {
             Method carParkFloorEmbeddedStringMethod = null;
             Method carParkFloorEmbeddedIdMethod = null;
 
-            for (Method m: embeddedKeyClass.getMethods()) {
+            for (Method m : embeddedKeyClass.getMethods()) {
                 if (m.getParameterCount() == 0) {
                     if (m.getReturnType() == Long.class) {
                         carParkFloorEmbeddedIdMethod = m;
-                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString") ) {
+                    } else if (m.getReturnType() == String.class && !m.getName().equals("toString")) {
                         carParkFloorEmbeddedStringMethod = m;
                     }
                 }
@@ -229,9 +224,9 @@ class CarParkFloorTest {
             );*/
 
 
-            String cF1 = (String)carParkFloorEmbeddedStringMethod.invoke(carParkFloor1EmbeddedKey);
+            String cF1 = (String) carParkFloorEmbeddedStringMethod.invoke(carParkFloor1EmbeddedKey);
             //String f1 = (String)carParkFloorEmbeddedStringMethod.invoke(floor1EmbeddedKey);
-            String cF2 = (String)carParkFloorEmbeddedStringMethod.invoke(carParkFloor2EmbeddedKey);
+            String cF2 = (String) carParkFloorEmbeddedStringMethod.invoke(carParkFloor2EmbeddedKey);
             //String f2 = (String)carParkFloorEmbeddedStringMethod.invoke(floor2EmbeddedKey);
 
             assertNotNull(cF1);
@@ -248,14 +243,14 @@ class CarParkFloorTest {
             // gotta find which one it is, floor1 or floor2
             Object embFl = getEmbeddedKeyMethod.invoke(fl);
             assertNotNull(embFl);
-            String emfFlId =(String) carParkFloorEmbeddedStringMethod.invoke(embFl);
+            String emfFlId = (String) carParkFloorEmbeddedStringMethod.invoke(embFl);
             assertNotNull(emfFlId);
 
             Object fl2 = floors.get(1);
             // gotta find which one it is, floor1 or floor2
             Object embFl2 = getEmbeddedKeyMethod.invoke(fl2);
             assertNotNull(embFl2);
-            String emfFlId2 =(String) carParkFloorEmbeddedStringMethod.invoke(embFl2);
+            String emfFlId2 = (String) carParkFloorEmbeddedStringMethod.invoke(embFl2);
             assertNotNull(emfFlId2);
 
             if (emfFlId.equals(cF1)) {
@@ -287,15 +282,14 @@ class CarParkFloorTest {
     }
 
     //@Test
-    public void getCarParkFloorIdTest()
-    {
+    public void getCarParkFloorIdTest() {
         try {
             Object carPark = carParkService.createCarPark("test6", "testtest", 12);
             assertNotNull(carPark);
             Class c = carPark.getClass();
             Method[] methods = c.getMethods();
             Method getId = null;
-            for (Method m: methods) {
+            for (Method m : methods) {
                 if (m.getReturnType() == Long.class) {
                     getId = m;
                     break;
@@ -312,10 +306,10 @@ class CarParkFloorTest {
             Method carParkFloorGetId = null;
             Method carParkFloorGetIdentifier = null;
 
-            for (Method m: carParkFloorClass.getMethods()) {
+            for (Method m : carParkFloorClass.getMethods()) {
                 if (m.getParameterCount() == 0 && m.getReturnType() == Long.class) {
                     carParkFloorGetId = m;
-                } else if (m.getParameterCount() == 0 && m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                } else if (m.getParameterCount() == 0 && m.getReturnType() == String.class && !m.getName().equals("toString")) {
                     carParkFloorGetIdentifier = m;
                 }
                 if (carParkFloorGetId != null && carParkFloorGetIdentifier != null) {
@@ -343,7 +337,7 @@ class CarParkFloorTest {
             assertNotNull(carParkFloor2);
             Long carParkFloor2Id = (Long) carParkFloorGetId.invoke(carParkFloor2);
             assertNotNull(carParkFloor2Id);
-            Object floor2 =  carParkService.getCarParkFloor(carParkFloor2Id);
+            Object floor2 = carParkService.getCarParkFloor(carParkFloor2Id);
             assertNotNull(floor2);
             Long floor2Id = (Long) carParkFloorGetId.invoke(floor2);
             assertNotNull(floor2Id);
@@ -360,21 +354,19 @@ class CarParkFloorTest {
     }
 
     //@Test
-    public void updateCarParkFloorTest()
-    {
+    public void updateCarParkFloorTest() {
         assertTrue(false);
     }
 
     @Test
-    public void deleteCarParkFloorTest()
-    {
+    void FLOOR03_deleteCarParkFloorTest() {
         Object carPark = carParkService.createCarPark("FLOOR-DELETE", "testtest", 12);
         try {
             assertNotNull(carPark);
             Class c = carPark.getClass();
             Method[] methods = c.getMethods();
             Method getId = null;
-            for (Method m: methods) {
+            for (Method m : methods) {
                 if (m.getReturnType() == Long.class) {
                     getId = m;
                     break;
@@ -390,7 +382,7 @@ class CarParkFloorTest {
             Object floor1 = carParkService.getCarParkFloor(id, "Floor1");
             Long carParkFloorId = null;
             if (floor1 == null) {
-                for (Method m: floor1.getClass().getMethods()) {
+                for (Method m : floor1.getClass().getMethods()) {
                     if (m.getParameterCount() == 0 && m.getReturnType() == Long.class) {
                         carParkFloorId = (Long) m.invoke(floor1);
                         assertNotNull(carParkFloorId);
@@ -443,10 +435,9 @@ class CarParkFloorTest {
         }
 
     }
-    
+
     // @Test
-    public void getAllCarParkFloorsId()
-    {
+    public void getAllCarParkFloorsId() {
         try {
             Object carPark = carParkService.createCarPark("test7", "testtest", 12);
             Long carParkId = getFieldValue(carPark, "id", Long.class);
@@ -456,21 +447,21 @@ class CarParkFloorTest {
             assertNotNull(floor1);
             assertNotNull(floor2);
             Method carParkFloorGetIdentifier = null;
-            for (Method m: floor1.getClass().getMethods()) {
-                if (m.getParameterCount() == 0 && m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+            for (Method m : floor1.getClass().getMethods()) {
+                if (m.getParameterCount() == 0 && m.getReturnType() == String.class && !m.getName().equals("toString")) {
                     carParkFloorGetIdentifier = m;
                     break;
                 }
             }
             assertNotNull(carParkFloorGetIdentifier);
-            
+
             List<Object> floors = carParkService.getCarParkFloors(carParkId);
             assertEquals(floors.size(), 2);
             Object fl1 = floors.get(0);
             Object fl2 = floors.get(1);
             assertNotNull(fl1);
             assertNotNull(fl2);
-            
+
             Long floor1Id = getFieldValue(floor1, "id", Long.class);
             Long floor2Id = getFieldValue(floor2, "id", Long.class);
             Long fl1Id = getFieldValue(fl1, "id", Long.class);
@@ -479,7 +470,7 @@ class CarParkFloorTest {
             assertNotNull(floor2Id);
             assertNotNull(fl1Id);
             assertNotNull(fl2Id);
-            
+
             if (floor1Id.equals(fl1)) {
                 if (floor2Id.equals(fl2)) {
                     assertEquals(carParkFloorGetIdentifier.invoke(floor1), carParkFloorGetIdentifier.invoke(fl1));
@@ -497,11 +488,11 @@ class CarParkFloorTest {
             } else {
                 assertTrue(false);
             }
-            
-            
+
+
         } catch (Exception e) {
             assertTrue(false);
         }
-        
-    }    
+
+    }
 }

@@ -105,7 +105,7 @@ class ParkingSpotTest {
     
 
     @Test
-    public void SPOT02_createAndGetParkingSpotWithoutType()
+    void SPOT02_createAndGetParkingSpotWithoutType()
     {
         try {
             Object carPark = carParkService.createCarPark("test7", "testtest", 12);
@@ -170,7 +170,7 @@ class ParkingSpotTest {
     }
     
     @Test
-    public void SPOT03_getAllParkingSpotsForCarParkWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    void SPOT03_getAllParkingSpotsForCarParkWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
     {
         Object carPark = carParkService.createCarPark("test7", "testtest", 12);
         assertNotNull(carPark);
@@ -287,7 +287,7 @@ class ParkingSpotTest {
     }
     
     @Test
-    public void SPOT04_updateParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    void SPOT04_updateParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
     {
         Object carPark = carParkService.createCarPark("test7", "testtest", 12);
         assertNotNull(carPark);
@@ -336,7 +336,7 @@ class ParkingSpotTest {
     }
     
     @Test
-    public void SPOT04_deleteParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    void SPOT05_deleteParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
     {
         Object carPark = carParkService.createCarPark("test7", "testtest", 12);
         assertNotNull(carPark);
