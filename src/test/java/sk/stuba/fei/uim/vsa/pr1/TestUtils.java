@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,6 +77,15 @@ public class TestUtils {
                                 method.getParameterCount() == 0)
                 .map(method -> camelCase(method.getName().substring(3)))
                 .collect(Collectors.toList()).toArray(new String[]{});
+    }
+
+    public static <T> boolean isFieldNull(Object obj, String field, Class<T> type) {
+        try {
+            return Objects.isNull(getFieldValue(obj, field, type));
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            e.printStackTrace();
+            return true;
+        }
     }
 
     public static String capitalize(String str) {

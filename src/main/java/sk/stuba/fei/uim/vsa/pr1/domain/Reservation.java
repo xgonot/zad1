@@ -1,30 +1,22 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 public class Reservation implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-     
-     @Id
-     @GeneratedValue(strategy=GenerationType.AUTO)
-     private Long id;
-     
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
     private LocalDateTime startsAt;
-     
-     
+
+
     private LocalDateTime endsAt;
 
     public Long getId() {
@@ -34,7 +26,7 @@ public class Reservation implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     private Double price = null;
 
     /**
@@ -55,10 +47,10 @@ public class Reservation implements Serializable {
         this.price = price;
     }
 
-    
+
     @ManyToOne
     private ParkingSpot parkingSpot;
-    
+
     @ManyToOne
     private Car car;
 
@@ -77,7 +69,7 @@ public class Reservation implements Serializable {
     public void setCar(Car car) {
         this.car = car;
     }
-    
+
     /**
      * Get the value of endsAt
      *
@@ -113,36 +105,34 @@ public class Reservation implements Serializable {
     public void setStartsAt(LocalDateTime startsAt) {
         this.startsAt = startsAt;
     }
-    
-    public void endReservation()
-    {
+
+    public void endReservation() {
         LocalDateTime now = LocalDateTime.now();
         int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
-        
+
         this.endsAt = now;
         long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
         long minDiff = ChronoUnit.MINUTES.between(this.startsAt, this.endsAt);
         if (minDiff > 0) {
             diff++;
         }
-        
+
         this.price = new Long(diff).doubleValue() * pricePerHour;
     }
-    
-     public void endReservation(long holidayHours)
-    {
+
+    public void endReservation(long holidayHours) {
         LocalDateTime now = LocalDateTime.now();
         int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
-        
+
         this.endsAt = now;
         long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
         long minDiff = ChronoUnit.MINUTES.between(this.startsAt, this.endsAt);
         if (minDiff > 0) {
             diff++;
         }
-        
+
         this.price = new Long(diff).doubleValue() * pricePerHour;
         Double holidayPrice = (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
-        this.price-= holidayPrice;
+        this.price -= holidayPrice;
     }
 }
