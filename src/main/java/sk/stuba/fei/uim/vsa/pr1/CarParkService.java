@@ -2,6 +2,7 @@ package sk.stuba.fei.uim.vsa.pr1;
 
 
 import sk.stuba.fei.uim.vsa.pr1.domain.Car;
+import sk.stuba.fei.uim.vsa.pr1.domain.CarPark;
 import sk.stuba.fei.uim.vsa.pr1.domain.User;
 
 import java.time.LocalDateTime;
@@ -40,11 +41,12 @@ public class CarParkService extends AbstractCarParkService {
         CarPark c = new CarPark();
         c.setName(name);
         c.setAddress(address);
-        c.setPricePerHour(pricePerHour);
+        c.setPrice(pricePerHour);
         em.persist(c);
         em.getTransaction().commit();
         em.close();
         return c;
+
     }
 
     @Override
@@ -76,13 +78,11 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public List<Object> getCarParks() {
-
         EntityManager em = emf.createEntityManager();
         TypedQuery<Object> q = em.createQuery("SELECT c FROM CarPark c", Object.class);
         List<Object> carParks = q.getResultList();
         em.close();
         return carParks;
-
     }
 
     @Override
@@ -101,7 +101,7 @@ public class CarParkService extends AbstractCarParkService {
         try {
             entityCarPark.setAddress(c.getAddress());
             entityCarPark.setName(c.getName());
-            entityCarPark.setPricePerHour(c.getPricePerHour());
+            entityCarPark.setPrice(c.getPrice());
             em.getTransaction().commit();
             em.close();
             return entityCarPark;
@@ -113,9 +113,6 @@ public class CarParkService extends AbstractCarParkService {
             em.close();
             return null;
         }
-        
-       
-
     }
 
     @Override
@@ -160,7 +157,6 @@ public class CarParkService extends AbstractCarParkService {
         }
         em.close();
         return c;
-
     }
 
     @Override
@@ -1052,7 +1048,5 @@ public class CarParkService extends AbstractCarParkService {
            holidayHours++;
        }
        return holidayHours;
-       
-       
     }
 }

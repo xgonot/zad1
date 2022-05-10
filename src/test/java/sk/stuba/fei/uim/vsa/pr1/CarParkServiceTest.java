@@ -53,6 +53,30 @@ class CarParkServiceTest {
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1");
     }
 
+    void PARK01_shouldCreateCarPark(){
+
+    }
+
+    void PARK02_shouldFindAllCarParks() {
+
+    }
+
+    void PARK03_shouldFindCarParkById() {
+
+    }
+
+    void PARK04_shouldFindCarParkByName() {
+
+    }
+
+    void PARK05_shouldUpdateCarPark() {
+
+    }
+
+    void PARK06_shouldRemoveCarPark() {
+
+    }
+
     @Test
     void USER01_shouldCreateUser() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);

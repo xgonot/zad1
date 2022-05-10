@@ -26,7 +26,7 @@ public class CarPark implements Serializable{
     private String address;
     
     @Column(name="PRICE_PER_HOUR")
-    private Integer pricePerHour;
+    private Double pricePerHour;
     
     @OneToMany(mappedBy = "carPark")
     private final List<CarParkFloor> carParkFloorList = new ArrayList<>();
@@ -70,10 +70,11 @@ public class CarPark implements Serializable{
      *
      * @return the value of id
      */
-    public Long getId() {
-        return id;
-    }
 
+    public Long getId()
+    {
+        return this.id;
+    }
     /**
      * Set the value of id
      *
@@ -91,11 +92,16 @@ public class CarPark implements Serializable{
         this.address = address;
     }
 
-    public Integer getPricePerHour() {
-        return pricePerHour;
+    public Integer getPrice() {
+        return this.pricePerHour.intValue();
     }
 
-    public void setPricePerHour(Integer pricePerHour) {
-        this.pricePerHour = pricePerHour;
+    public void setPrice(Double price) {
+        this.pricePerHour = price;
+    }
+
+    public void setPrice(Integer price) {
+        this.pricePerHour = price.doubleValue();
+
     }
 }

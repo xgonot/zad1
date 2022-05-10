@@ -117,7 +117,7 @@ public class Reservation implements Serializable {
     public void endReservation()
     {
         LocalDateTime now = LocalDateTime.now();
-        int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
+        int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPrice();
         
         this.endsAt = now;
         long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
@@ -132,7 +132,7 @@ public class Reservation implements Serializable {
      public void endReservation(long holidayHours)
     {
         LocalDateTime now = LocalDateTime.now();
-        int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
+        int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPrice();
         
         this.endsAt = now;
         long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
