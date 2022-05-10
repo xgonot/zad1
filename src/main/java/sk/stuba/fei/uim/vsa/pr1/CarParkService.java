@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+
 import sk.stuba.fei.uim.vsa.pr1.domain.*;
 
 
@@ -18,9 +19,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CarParkService extends AbstractCarParkService {
-    
+
     public static boolean useHoliday = true;
-    
+
     public CarParkService() {
         super();
     }
@@ -32,7 +33,7 @@ public class CarParkService extends AbstractCarParkService {
         TypedQuery<CarPark> q = em.createQuery("SELECT c FROM CarPark c WHERE c.name = :name", CarPark.class);
         q.setParameter("name", name);
         List<CarPark> carParks = q.getResultList();
-        if (! carParks.isEmpty()) {
+        if (!carParks.isEmpty()) {
             em.close();
             return null;
         }
@@ -50,10 +51,10 @@ public class CarParkService extends AbstractCarParkService {
     @Override
     public Object getCarPark(Long carParkId) {
 
-       EntityManager em = emf.createEntityManager();
-       CarPark p = em.find(CarPark.class, carParkId);
-       em.close();
-       return p;
+        EntityManager em = emf.createEntityManager();
+        CarPark p = em.find(CarPark.class, carParkId);
+        em.close();
+        return p;
 
     }
 
@@ -66,8 +67,7 @@ public class CarParkService extends AbstractCarParkService {
         Object p = null;
         try {
             p = q.getSingleResult();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
         }
         em.close();
         return p;
@@ -106,15 +106,14 @@ public class CarParkService extends AbstractCarParkService {
             em.close();
             return entityCarPark;
         } catch (Exception e) {
-            if (em.getTransaction().isActive()){
-                 em.getTransaction().rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
             }
-           
+
             em.close();
             return null;
         }
-        
-       
+
 
     }
 
@@ -123,39 +122,38 @@ public class CarParkService extends AbstractCarParkService {
 
         EntityManager em = emf.createEntityManager();
         CarPark c = em.find(CarPark.class, carParkId);
-        
-        
+
+
         em.getTransaction().begin();
-        
+
         TypedQuery<Reservation> resQuery = em.createQuery("SELECT r from Reservation r WHERE r.parkingSpot.carParkFloor.carPark = :carPark", Reservation.class);
         resQuery.setParameter("carPark", c);
         List<Reservation> reservations = resQuery.getResultList();
-        for (Reservation res: reservations) {
+        for (Reservation res : reservations) {
             if (res.getEndsAt() != null) {
                 if (CarParkService.useHoliday) {
-                     LocalDateTime now = LocalDateTime.now();
-                     res.endReservation(this.getHolidayMintes(res.getStartsAt(), now, em));
+                    LocalDateTime now = LocalDateTime.now();
+                    res.endReservation(this.getHolidayMintes(res.getStartsAt(), now, em));
                 } else {
-                     res.endReservation();
+                    res.endReservation();
                 }
-               
-                
-               
+
+
             }
             res.setParkingSpot(null);
             em.merge(res);
         }
-        
+
         if (c != null) {
-            for(CarParkFloor floor: c.getCarParkFloorList()) {
-                for (ParkingSpot spot: floor.getParkingSpots()) {
+            for (CarParkFloor floor : c.getCarParkFloorList()) {
+                for (ParkingSpot spot : floor.getParkingSpots()) {
                     em.remove(spot);
                 }
                 em.remove(floor);
             }
             em.remove(c);
         }
-        if(em.getTransaction().isActive()) {
+        if (em.getTransaction().isActive()) {
             em.getTransaction().commit();
         }
         em.close();
@@ -179,13 +177,13 @@ public class CarParkService extends AbstractCarParkService {
         emb.setIdentifier(floorIdentifier);
         emb.setCarParkId(carParkId);
         c.setEmbeddedId(emb);
-        
+
         carPark.addCarParkFloor(c);
         try {
-             em.persist(c);
-             em.getTransaction().commit();
-             em.close();
-             return c;
+            em.persist(c);
+            em.getTransaction().commit();
+            em.close();
+            return c;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -217,12 +215,12 @@ public class CarParkService extends AbstractCarParkService {
     @Override
     public List<Object> getCarParkFloors(Long carParkId) {
 
-         EntityManager em = emf.createEntityManager();
-         TypedQuery<Object> q = em.createQuery("SELECT c FROM CarParkFloor c WHERE c.embeddedId.carParkId = :carParkId", Object.class);
-         q.setParameter("carParkId", carParkId);
-         List<Object> result = q.getResultList();
-         em.close();
-         return result;
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Object> q = em.createQuery("SELECT c FROM CarParkFloor c WHERE c.embeddedId.carParkId = :carParkId", Object.class);
+        q.setParameter("carParkId", carParkId);
+        List<Object> result = q.getResultList();
+        em.close();
+        return result;
 
     }
 
@@ -238,35 +236,35 @@ public class CarParkService extends AbstractCarParkService {
         CarParkEmbeddedId emb = new CarParkEmbeddedId();
         emb.setCarParkId(carParkId);
         emb.setIdentifier(floorIdentifier);
-        
+
         CarParkFloor floor = em.find(CarParkFloor.class, emb);
-        
+
         if (floor != null) {
             em.getTransaction().begin();
-            
+
             TypedQuery<Reservation> reservationsQuery = em.createQuery("SELECT r from Reservation r where r.parkingSpot.carParkFloor = :carParkFloor", Reservation.class);
             reservationsQuery.setParameter("carParkFloor", floor);
             List<Reservation> reservations = reservationsQuery.getResultList();
-            for (Reservation r: reservations) {
+            for (Reservation r : reservations) {
                 //r.setEndsAt(now);
                 if (r.getEndsAt() == null) {
                     if (CarParkService.useHoliday) {
                         LocalDateTime now = LocalDateTime.now();
                         r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
                     } else {
-                         r.endReservation();
+                        r.endReservation();
                     }
                 }
                 r.setParkingSpot(null);
                 em.merge(r);
             }
-            
-            for (ParkingSpot s: floor.getParkingSpots()) {
+
+            for (ParkingSpot s : floor.getParkingSpots()) {
                 em.remove(s);
             }
-            
+
             em.remove(floor);
-            
+
             if (em.getTransaction().isActive()) {
                 em.getTransaction().commit();
             }
@@ -275,14 +273,14 @@ public class CarParkService extends AbstractCarParkService {
         }
         em.close();
         return null;
-        
+
 
     }
 
     @Override
     public Object deleteCarParkFloor(Long carParkFloorId) {
 
-       return null;
+        return null;
     }
 
     @Override
@@ -292,7 +290,7 @@ public class CarParkService extends AbstractCarParkService {
         existsQuery.setParameter("carParkId", carParkId);
         existsQuery.setParameter("identifier", spotIdentifier);
         List<ParkingSpot> existsList = existsQuery.getResultList();
-        if (! existsList.isEmpty()) {
+        if (!existsList.isEmpty()) {
             em.close();
             return null;
         }
@@ -301,7 +299,7 @@ public class CarParkService extends AbstractCarParkService {
         emb.setIdentifier(floorIdentifier);
         em.getTransaction().begin();
         CarParkFloor f = em.find(CarParkFloor.class, emb);
-        
+
         if (f != null) {
             ParkingSpot spot = new ParkingSpot();
             spot.setIdentifier(spotIdentifier);
@@ -339,8 +337,8 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Map<String, List<Object>> getParkingSpots(Long carParkId) {
-         EntityManager em = emf.createEntityManager();
-         CarPark c = em.find(CarPark.class, carParkId);
+        EntityManager em = emf.createEntityManager();
+        CarPark c = em.find(CarPark.class, carParkId);
         if (c == null) {
             em.close();
             return null;
@@ -348,8 +346,8 @@ public class CarParkService extends AbstractCarParkService {
         TypedQuery<Object> parkingSpotQuery = em.createQuery("SELECT s FROM ParkingSpot s WHERE s.carParkFloor.carPark = :carPark AND s.carParkFloor.embeddedId.identifier = :identifier", Object.class);
         Map<String, List<Object>> retMap = new HashMap();
         parkingSpotQuery.setParameter("carPark", c);
-        for (CarParkFloor f: c.getCarParkFloorList()) {
-            
+        for (CarParkFloor f : c.getCarParkFloorList()) {
+
             parkingSpotQuery.setParameter("identifier", f.getEmbeddedId().getIdentifier());
             List<Object> l = parkingSpotQuery.getResultList();
             retMap.put(f.getEmbeddedId().getIdentifier(), l);
@@ -371,10 +369,10 @@ public class CarParkService extends AbstractCarParkService {
         Map<String, List<Object>> retMap = new HashMap();
         TypedQuery<Long> activeReservationsQuery = em.createQuery("SELECT r.parkingSpot.id FROM Reservation r WHERE r.parkingSpot.carParkFloor.carPark.name = :name AND (r.endsAt IS NULL OR r.endsAt < :now)", Long.class);
         TypedQuery<Object> spotNotInQuery = em.createQuery("SELECT p from ParkingSpot p WHERE p.carParkFloor = :floor AND p.id NOT IN :occupiedIds", Object.class);
-         TypedQuery<Object> spotQuery = em.createQuery("SELECT p from ParkingSpot p WHERE p.carParkFloor = :floor", Object.class);
+        TypedQuery<Object> spotQuery = em.createQuery("SELECT p from ParkingSpot p WHERE p.carParkFloor = :floor", Object.class);
         LocalDateTime now = LocalDateTime.now();
         activeReservationsQuery.setParameter("now", now);
-        for (CarParkFloor f :  c.getCarParkFloorList()) {
+        for (CarParkFloor f : c.getCarParkFloorList()) {
             activeReservationsQuery.setParameter("name", f.getCarPark().getName());
             List<Long> occupiedIds = activeReservationsQuery.getResultList();
             if (occupiedIds.isEmpty()) {
@@ -385,7 +383,7 @@ public class CarParkService extends AbstractCarParkService {
                 spotNotInQuery.setParameter("occupiedIds", occupiedIds);
                 retMap.put(f.getEmbeddedId().getIdentifier(), spotNotInQuery.getResultList());
             }
-            
+
         }
         em.close();
         return retMap;
@@ -403,7 +401,7 @@ public class CarParkService extends AbstractCarParkService {
         }
         Map<String, List<Object>> retMap = new HashMap();
         TypedQuery<Object> spotQuery = em.createQuery("SELECT r.parkingSpot from Reservation r WHERE r.parkingSpot.carParkFloor = :floor AND r.endsAt IS NULL", Object.class);
-        for (CarParkFloor f :  c.getCarParkFloorList()) {
+        for (CarParkFloor f : c.getCarParkFloorList()) {
             spotQuery.setParameter("floor", f);
             retMap.put(f.getEmbeddedId().getIdentifier(), spotQuery.getResultList());
         }
@@ -442,35 +440,35 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object deleteParkingSpot(Long parkingSpotId) {
-         EntityManager em = emf.createEntityManager();
-         em.getTransaction().begin();
-         ParkingSpot spot = em.find(ParkingSpot.class, parkingSpotId);
-         if (spot == null) {
-             em.getTransaction().rollback();
-             return null;
-         }
-         
-         TypedQuery<Reservation> resQuery = em.createQuery("SELECT r FROM Reservation r WHERE r.parkingSpot = :parkingSpot", Reservation.class);
-         resQuery.setParameter("parkingSpot", spot);
-         List<Reservation> list = resQuery.getResultList();
-         for (Reservation r: list) {
-             if (r.getEndsAt() == null) {
-                 if (CarParkService.useHoliday) {
-                        LocalDateTime now = LocalDateTime.now();
-                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
-                    } else {
-                         r.endReservation();
-                    }
-             }
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        ParkingSpot spot = em.find(ParkingSpot.class, parkingSpotId);
+        if (spot == null) {
+            em.getTransaction().rollback();
+            return null;
+        }
+
+        TypedQuery<Reservation> resQuery = em.createQuery("SELECT r FROM Reservation r WHERE r.parkingSpot = :parkingSpot", Reservation.class);
+        resQuery.setParameter("parkingSpot", spot);
+        List<Reservation> list = resQuery.getResultList();
+        for (Reservation r : list) {
+            if (r.getEndsAt() == null) {
+                if (CarParkService.useHoliday) {
+                    LocalDateTime now = LocalDateTime.now();
+                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                } else {
+                    r.endReservation();
+                }
+            }
             //r.endReservation();
             r.setParkingSpot(null);
             em.merge(r);
-         }
-         
-         em.remove(spot);
-         em.getTransaction().commit();
-         em.close();
-         return spot;
+        }
+
+        em.remove(spot);
+        em.getTransaction().commit();
+        em.close();
+        return spot;
     }
 
     @Override
@@ -520,10 +518,10 @@ public class CarParkService extends AbstractCarParkService {
         List<Object> cars = null;
         try {
             User user = em.find(User.class, userId);
-           
+
             TypedQuery<Object> q = em.createQuery("SELECT c FROM Car c where c.user = :user", Object.class);
             q.setParameter("user", user);
-            
+
             cars = q.getResultList();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -571,24 +569,24 @@ public class CarParkService extends AbstractCarParkService {
             return null;
         }
         em.getTransaction().begin();
-        
+
         TypedQuery<Reservation> resQuery = em.createQuery("SELECT r FROM Reservation r WHERE r.car = :car", Reservation.class);
         resQuery.setParameter("car", c);
         List<Reservation> res = resQuery.getResultList();
-        for (Reservation r: res) {
+        for (Reservation r : res) {
             if (r.getEndsAt() == null) {
                 if (CarParkService.useHoliday) {
-                        LocalDateTime now = LocalDateTime.now();
-                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
-                    } else {
-                         r.endReservation();
-                    }
+                    LocalDateTime now = LocalDateTime.now();
+                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                } else {
+                    r.endReservation();
+                }
             }
             //r.endReservation();
             r.setCar(null);
             em.merge(r);
         }
-        
+
         em.remove(c);
         em.getTransaction().commit();
         em.close();
@@ -597,24 +595,24 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createUser(String firstname, String lastname, String email) {
-         EntityManager em = emf.createEntityManager();
-         User u = new User();
-         u.setEmail(email);
-         u.setFirstName(firstname);
-         u.setLastName(lastname);
-         em.getTransaction().begin();
-         try {
-             em.persist(u);
-             em.getTransaction().commit();
-             em.close();
-             return u;
-         } catch (Exception e) {
-             if (em.getTransaction().isActive()) {
-                 em.getTransaction().rollback();
-             }
-             em.close();
-             return null;
-         }
+        EntityManager em = emf.createEntityManager();
+        User u = new User();
+        u.setEmail(email);
+        u.setFirstName(firstname);
+        u.setLastName(lastname);
+        em.getTransaction().begin();
+        try {
+            em.persist(u);
+            em.getTransaction().commit();
+            em.close();
+            return u;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            em.close();
+            return null;
+        }
     }
 
     @Override
@@ -696,19 +694,19 @@ public class CarParkService extends AbstractCarParkService {
             return u;
         }
         List<Reservation> res = q.getResultList();
-        for (Reservation r:  res) {
+        for (Reservation r : res) {
             if (r.getEndsAt() == null) {
                 if (CarParkService.useHoliday) {
-                        LocalDateTime now = LocalDateTime.now();
-                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
-                    } else {
-                         r.endReservation();
-                    }
+                    LocalDateTime now = LocalDateTime.now();
+                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                } else {
+                    r.endReservation();
+                }
             }
             r.setCar(null);
             em.merge(r);
         }
-        for (Car c: u.getCars()) {
+        for (Car c : u.getCars()) {
             em.remove(c);
         }
         em.remove(u);
@@ -719,72 +717,72 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createReservation(Long parkingSpotId, Long cardId) {
-         EntityManager em = emf.createEntityManager();
-         ParkingSpot p = em.find(ParkingSpot.class, parkingSpotId);
-         Car c = em.find(Car.class, cardId);
-         if (c == null || p == null) {
-             em.close();
-             return null;
-         }
-         
-         TypedQuery<Reservation> activeRes = em.createQuery("SELECT r FROM Reservation r WHERE r.car = :car AND r.parkingSpot = :spot AND r.endsAt IS NULL", Reservation.class);
-         activeRes.setParameter("car", c);
-         activeRes.setParameter("spot", p);
-         List<Reservation> res = activeRes.getResultList();
-         
-         if (! res.isEmpty()) {
-             em.close();
-             return null;
-         }
-         em.getTransaction().begin();
-         LocalDateTime now = LocalDateTime.now();
-         Reservation r = new Reservation();
-         r.setCar(c);
-         r.setParkingSpot(p);
-         r.setStartsAt(now);
-         r.setEndsAt(null);
-         em.persist(r);
-         em.flush();
-         em.getTransaction().commit();
-         em.close();
-         return r;
+        EntityManager em = emf.createEntityManager();
+        ParkingSpot p = em.find(ParkingSpot.class, parkingSpotId);
+        Car c = em.find(Car.class, cardId);
+        if (c == null || p == null) {
+            em.close();
+            return null;
+        }
+
+        TypedQuery<Reservation> activeRes = em.createQuery("SELECT r FROM Reservation r WHERE r.car = :car AND r.parkingSpot = :spot AND r.endsAt IS NULL", Reservation.class);
+        activeRes.setParameter("car", c);
+        activeRes.setParameter("spot", p);
+        List<Reservation> res = activeRes.getResultList();
+
+        if (!res.isEmpty()) {
+            em.close();
+            return null;
+        }
+        em.getTransaction().begin();
+        LocalDateTime now = LocalDateTime.now();
+        Reservation r = new Reservation();
+        r.setCar(c);
+        r.setParkingSpot(p);
+        r.setStartsAt(now);
+        r.setEndsAt(null);
+        em.persist(r);
+        em.flush();
+        em.getTransaction().commit();
+        em.close();
+        return r;
     }
 
     @Override
     public Object endReservation(Long reservationId) {
-         EntityManager em = emf.createEntityManager();
-         em.getTransaction().begin();
-         Reservation r = em.find(Reservation.class, reservationId);
-         if (r == null) {
-             em.getTransaction().rollback();
-             em.close();
-             return null;
-         }
-         if (r.getEndsAt() != null) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Reservation r = em.find(Reservation.class, reservationId);
+        if (r == null) {
             em.getTransaction().rollback();
             em.close();
             return null;
-         }
-         if (CarParkService.useHoliday) {
+        }
+        if (r.getEndsAt() != null) {
+            em.getTransaction().rollback();
+            em.close();
+            return null;
+        }
+        if (CarParkService.useHoliday) {
             LocalDateTime now = LocalDateTime.now();
             r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
         } else {
-             r.endReservation();
+            r.endReservation();
         }
-         em.merge(r);
-         em.getTransaction().commit();
-         em.close();
-         return r;
+        em.merge(r);
+        em.getTransaction().commit();
+        em.close();
+        return r;
     }
 
     @Override
     public List<Object> getReservations(Long parkingSpotId, Date date) {
         EntityManager em = emf.createEntityManager();
         LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        
+
         LocalDateTime dayStart = localDate.atStartOfDay();
         LocalDateTime dayEnd = localDate.atTime(LocalTime.MAX);
-        
+
         TypedQuery<Object> res = em.createQuery("SELECT r FROM Reservation r WHERE r.startsAt >= :dayStart AND r.startsAt <= :dayEnd", Object.class);
         res.setParameter("dayStart", dayStart);
         res.setParameter("dayEnd", dayEnd);
@@ -795,11 +793,12 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public List<Object> getMyReservations(Long userId) {
-         EntityManager em = emf.createEntityManager();
-         TypedQuery<Object> resQuery = em.createQuery("SELECT r FROM Reservation r WHERE r.car.user.id = :userId", Object.class);
-         List<Object> r = resQuery.getResultList();
-         em.close();
-         return r;
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Object> resQuery = em.createQuery("SELECT r FROM Reservation r WHERE r.car.user.id = :userId", Object.class);
+        resQuery.setParameter("userId", userId);
+        List<Object> r = resQuery.getResultList();
+        em.close();
+        return r;
     }
 
     @Override
@@ -810,7 +809,7 @@ public class CarParkService extends AbstractCarParkService {
         Reservation r = (Reservation) reservation;
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
-        
+
         Reservation databaseReservation = em.find(Reservation.class, r.getId());
         if (databaseReservation == null) {
             em.getTransaction().rollback();
@@ -818,7 +817,7 @@ public class CarParkService extends AbstractCarParkService {
             return null;
         }
         try {
-             databaseReservation.setEndsAt(r.getEndsAt());
+            databaseReservation.setEndsAt(r.getEndsAt());
             databaseReservation.setPrice(r.getPrice());
             databaseReservation.setStartsAt(r.getStartsAt());
             em.merge(databaseReservation);
@@ -901,23 +900,23 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createHoliday(String name, Date date) {
-         EntityManager em = emf.createEntityManager();
-         em.getTransaction().begin();
-         try {
-             Holiday h = new Holiday();
-             h.setName(name);
-             h.setDay(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withYear(1));
-             em.persist(h);
-             em.getTransaction().commit();
-             em.close();
-             return h;
-         } catch (Exception e) {
-             if (em.getTransaction().isActive()) {
-                 em.getTransaction().rollback();
-             }
-             em.close();
-             return null;
-         }
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        try {
+            Holiday h = new Holiday();
+            h.setName(name);
+            h.setDay(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withYear(1));
+            em.persist(h);
+            em.getTransaction().commit();
+            em.close();
+            return h;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            em.close();
+            return null;
+        }
     }
 
     @Override
@@ -948,20 +947,20 @@ public class CarParkService extends AbstractCarParkService {
         if (holidayId == null) {
             return null;
         }
-         EntityManager em = emf.createEntityManager();
-         em.getTransaction().begin();
-         Holiday h = em.find(Holiday.class, holidayId);
-         if (h == null) {
-             em.getTransaction().rollback();
-             em.close();
-             return null;
-         }
-         em.remove(h);
-         em.getTransaction().commit();
-         em.close();
-         return h;
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Holiday h = em.find(Holiday.class, holidayId);
+        if (h == null) {
+            em.getTransaction().rollback();
+            em.close();
+            return null;
+        }
+        em.remove(h);
+        em.getTransaction().commit();
+        em.close();
+        return h;
     }
-    
+
     private Object runTransaction(Function<EntityManager, Object> operation) {
         EntityManager em = emf.createEntityManager();
         Object obj = null;
@@ -977,82 +976,81 @@ public class CarParkService extends AbstractCarParkService {
         em.close();
         return obj;
     }
-    
-    private long getHolidayMintes(LocalDateTime start, LocalDateTime end, EntityManager em)
-    {
+
+    private long getHolidayMintes(LocalDateTime start, LocalDateTime end, EntityManager em) {
         LocalDate startDate = start.toLocalDate();
         LocalDate endDate = end.toLocalDate();
-       if (endDate.isBefore(startDate)) {
-           return 0;
-       }
-       boolean useFullYear = false;
-       List<LocalDate> inList = new ArrayList();
-       if (start.getYear() == end.getYear()) {
-           inList.add(startDate.withYear(1));
-           if (start.getDayOfYear() != end.getDayOfYear()) {
-               for(LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
-                   inList.add(d.withYear(1));
-               }
-               inList.add(endDate.withYear(1));
-           }  
-       } else {
-           if (end.getYear() - start.getYear() == 1) {
-               LocalDate startWithoutYear = startDate.withYear(1);
-               LocalDate endWithoutYear = endDate.withYear(1);
-               if (endWithoutYear.isAfter(startWithoutYear)) {
-                   useFullYear = true;
-               } else {
-                   LocalDate endYear = endWithoutYear.withMonth(12).withDayOfMonth(31);
-                   for(LocalDate d = startWithoutYear; d.isBefore(endYear); d = d.plusDays(1)) {
+        if (endDate.isBefore(startDate)) {
+            return 0;
+        }
+        boolean useFullYear = false;
+        List<LocalDate> inList = new ArrayList();
+        if (start.getYear() == end.getYear()) {
+            inList.add(startDate.withYear(1));
+            if (start.getDayOfYear() != end.getDayOfYear()) {
+                for (LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
+                    inList.add(d.withYear(1));
+                }
+                inList.add(endDate.withYear(1));
+            }
+        } else {
+            if (end.getYear() - start.getYear() == 1) {
+                LocalDate startWithoutYear = startDate.withYear(1);
+                LocalDate endWithoutYear = endDate.withYear(1);
+                if (endWithoutYear.isAfter(startWithoutYear)) {
+                    useFullYear = true;
+                } else {
+                    LocalDate endYear = endWithoutYear.withMonth(12).withDayOfMonth(31);
+                    for (LocalDate d = startWithoutYear; d.isBefore(endYear); d = d.plusDays(1)) {
                         inList.add(d);
                     }
                     inList.add(endYear);
                     LocalDate startYear = startWithoutYear.withDayOfMonth(1).withMonth(1);
-                    for(LocalDate d = startYear; d.isBefore(endWithoutYear); d = d.plusDays(1)) {
+                    for (LocalDate d = startYear; d.isBefore(endWithoutYear); d = d.plusDays(1)) {
                         inList.add(d);
                     }
                     inList.add(endWithoutYear);
-               }
-           }
-       }
+                }
+            }
+        }
         List<LocalDate> holidays = null;
-       if (useFullYear) {
-           TypedQuery<LocalDate> q = em.createQuery("SELECT h.day from Holiday h", LocalDate.class);
-           holidays = q.getResultList();
-       } else {
+        if (useFullYear) {
+            TypedQuery<LocalDate> q = em.createQuery("SELECT h.day from Holiday h", LocalDate.class);
+            holidays = q.getResultList();
+        } else {
             TypedQuery<LocalDate> q = em.createQuery("SELECT h.day from Holiday h WHERE h.day IN :inDates", LocalDate.class);
             q.setParameter("inDates", inList);
             holidays = q.getResultList();
-       }
-       
-       long holidayMinutes = 0;
-       
-       if (startDate.equals(endDate)) {
-           if (holidays.contains(startDate.withYear(1))) {
+        }
+
+        long holidayMinutes = 0;
+
+        if (startDate.equals(endDate)) {
+            if (holidays.contains(startDate.withYear(1))) {
                 holidayMinutes = ChronoUnit.MINUTES.between(start, end);
-           }
-       } else {
-           LocalDateTime dayAfter = start.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-           if (holidays.contains(startDate.withYear(1))) {
+            }
+        } else {
+            LocalDateTime dayAfter = start.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+            if (holidays.contains(startDate.withYear(1))) {
                 holidayMinutes = ChronoUnit.MINUTES.between(start, dayAfter);
-           }
-           LocalDateTime endDayStart = end.withHour(0).withMinute(0).withSecond(0).withNano(0);
-           for (LocalDateTime d = dayAfter; d.isBefore(endDayStart); d = d.plusDays(1)) {
-               if (holidays.contains(d.withYear(1).toLocalDate())) {
-                   holidayMinutes+= 24*60;
-               }
-           }
-           if (holidays.contains(end.withYear(1).toLocalDate())) {
-               holidayMinutes+= ChronoUnit.MINUTES.between(endDayStart, end);
-           }
-       }
-       
-       long holidayHours = holidayMinutes / 60;
-       if (holidayMinutes % 60 > 0) {
-           holidayHours++;
-       }
-       return holidayHours;
-       
-       
+            }
+            LocalDateTime endDayStart = end.withHour(0).withMinute(0).withSecond(0).withNano(0);
+            for (LocalDateTime d = dayAfter; d.isBefore(endDayStart); d = d.plusDays(1)) {
+                if (holidays.contains(d.withYear(1).toLocalDate())) {
+                    holidayMinutes += 24 * 60;
+                }
+            }
+            if (holidays.contains(end.withYear(1).toLocalDate())) {
+                holidayMinutes += ChronoUnit.MINUTES.between(endDayStart, end);
+            }
+        }
+
+        long holidayHours = holidayMinutes / 60;
+        if (holidayMinutes % 60 > 0) {
+            holidayHours++;
+        }
+        return holidayHours;
+
+
     }
 }
