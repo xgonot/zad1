@@ -12,8 +12,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static sk.stuba.fei.uim.vsa.pr1.TestData.*;
 import static sk.stuba.fei.uim.vsa.pr1.TestUtils.*;
 
