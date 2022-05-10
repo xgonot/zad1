@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import sk.stuba.fei.uim.vsa.pr1.AbstractCarParkService;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -100,6 +101,189 @@ class ParkingSpotTest {
         Object secondFloorSpot = secondFloorSpots.get(0);
         testShouldHaveId(secondFloorSpot);
         assertEquals(spot21Id, getFieldValue(secondFloorSpot, "id", Long.class));
+    }
+    
+
+    @Test
+    public void SPOT02_createAndGetParkingSpotWithoutType()
+    {
+        try {
+            Object carPark = carParkService.createCarPark("test7", "testtest", 12);
+            assertNotNull(carPark);
+            Class c = carPark.getClass();
+            Method[] methods = c.getMethods();
+            Method getId = null;
+            for (Method m: methods) {
+                if (m.getReturnType() == Long.class) {
+                    getId = m;
+                    break;
+                }
+            }
+            assertNotNull(getId);
+            Long id = (Long) getId.invoke(carPark);
+            assertNotNull(id);
+
+            Object carParkFloor = carParkService.createCarParkFloor(id, "Floor3-1");
+            assertNotNull(carParkFloor);
+
+            Object spot1 = carParkService.createParkingSpot(id, "Floor3-1", "1.01");
+            assertNotNull(spot1);
+
+            Method getParkingSpotId = null;
+            Method getParkingSpotIdentifier = null;
+            Class parkingSpotClass = spot1.getClass();
+
+            for (Method m: parkingSpotClass.getMethods()) {
+                if (m.getParameterCount() == 0) {
+                    if (m.getReturnType() == Long.class) {
+                        getParkingSpotId = m;
+                    } else if (m.getReturnType() == String.class && ! m.getName().equals("toString")) {
+                        getParkingSpotIdentifier = m;
+                    }
+                }
+            }
+
+            assertNotNull(getParkingSpotId);
+            assertNotNull(getParkingSpotIdentifier);
+
+            Long spotId = (Long) getParkingSpotId.invoke(spot1);
+            assertNotNull(spotId);
+
+            Object carParkSpot = carParkService.getParkingSpot(spotId);
+            assertNotNull(carParkSpot);
+
+            Long carParkSpotId = (Long) getParkingSpotId.invoke(carParkSpot);
+            assertNotNull(carParkSpotId);
+
+            String spotIdentifier = (String) getParkingSpotIdentifier.invoke(spot1);
+            String parkingSpotIdentifier = (String) getParkingSpotIdentifier.invoke(carParkSpot);
+
+            assertNotNull(spotIdentifier);
+            assertNotNull(parkingSpotIdentifier);
+
+            assertEquals(spotIdentifier, parkingSpotIdentifier);
+
+
+        } catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+    
+    @Test
+    public void SPOT03_getAllParkingSpotsForCarParkWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    {
+        Object carPark = carParkService.createCarPark("test7", "testtest", 12);
+        assertNotNull(carPark);
+        
+        Long carParkId = getFieldValue(carPark, "id", Long.class);
+        assertNotNull(carParkId);
+        
+        Object floor1 = carParkService.createCarParkFloor(carParkId, "Floor1");
+        Object floor2 = carParkService.createCarParkFloor(carParkId, "Floor2");
+        assertNotNull(floor1);
+        assertNotNull(floor2);
+        
+        Object floor1Spot1 = carParkService.createParkingSpot(carParkId, "Floor1", "1.1");
+        Object floor1Spot2 = carParkService.createParkingSpot(carParkId, "Floor1", "1.2");
+        
+        Object floor2Spot1 = carParkService.createParkingSpot(carParkId, "Floor2", "2.1");
+        Object floor2Spot2 = carParkService.createParkingSpot(carParkId, "Floor2", "2.2");
+        
+        assertNotNull(floor1Spot1);
+        assertNotNull(floor1Spot2);
+        assertNotNull(floor2Spot1);
+        assertNotNull(floor2Spot2);
+        
+        Map<String, List<Object>> map = carParkService.getParkingSpots(carParkId);
+        assertNotNull(map);
+        assertEquals(map.keySet().size(), 2);
+        assertTrue(map.keySet().contains("Floor1"));
+        assertTrue(map.keySet().contains("Floor2"));
+        
+        List<Object> floor1Slots = map.get("Floor1");
+        List<Object> floor2Slots = map.get("Floor2");
+        assertNotNull(floor1Slots);
+        assertNotNull(floor2Slots);
+        
+        assertEquals(floor1Slots.size(), 2);
+        assertEquals(floor2Slots.size(), 2);
+        
+        Long floor1Spot1Id = getFieldValue(floor1Spot1, "id", Long.class);
+        Long floor1Spot2Id = getFieldValue(floor1Spot2, "id", Long.class);
+        Long floor2Spot1Id = getFieldValue(floor2Spot1, "id", Long.class);
+        Long floor2Spot2Id = getFieldValue(floor2Spot2, "id", Long.class);
+        
+        assertNotNull(floor1Spot1Id);
+        assertNotNull(floor1Spot2Id);
+        assertNotNull(floor2Spot1Id);
+        assertNotNull(floor2Spot2Id);
+        
+        Object fl1Spot1 = floor1Slots.get(0);
+        Object fl1Spot2 = floor1Slots.get(1);
+        
+        Object fl2Spot1 = floor2Slots.get(0);
+        Object fl2Spot2 = floor2Slots.get(1);
+        
+        assertNotNull(fl1Spot1);
+        assertNotNull(fl1Spot2);
+        assertNotNull(fl2Spot1);
+        assertNotNull(fl2Spot2);
+        
+        String[] spotFields = findFieldByType(floor1Spot1, String.class);
+        assertNotNull(spotFields);
+        
+        Long fl1Spot1Id = getFieldValue(fl1Spot1, "id", Long.class);
+        Long fl1Spot2Id = getFieldValue(fl1Spot2, "id", Long.class);
+        Long flr2Spot1Id = getFieldValue(fl2Spot1, "id", Long.class);
+        Long flr2Spot2Id = getFieldValue(fl2Spot2, "id", Long.class);
+        
+        assertNotNull(fl1Spot1Id);
+        assertNotNull(fl1Spot2Id);
+        assertNotNull(flr2Spot1Id);
+        assertNotNull(flr2Spot2Id);
+        
+        if (floor1Spot1Id.equals(fl1Spot1Id)) {
+            if (floor1Spot2Id.equals(fl1Spot2Id)) {
+                for (String f: spotFields) {
+                    assertEquals(getFieldValue(floor1Spot1, f, String.class), getFieldValue(fl1Spot1, f, String.class));
+                    assertEquals(getFieldValue(floor1Spot2, f, String.class), getFieldValue(fl1Spot2, f, String.class));
+                    
+                }
+            } else {
+                assertTrue(false);
+            }
+            
+        } else if (floor1Spot2Id.equals(fl1Spot2Id)) {
+            for (String f: spotFields) {
+                    assertEquals(getFieldValue(floor1Spot2, f, String.class), getFieldValue(fl1Spot1, f, String.class));
+                    assertEquals(getFieldValue(floor1Spot1, f, String.class), getFieldValue(fl1Spot2, f, String.class));                    
+                }
+            
+        } else {
+            assertTrue(false);
+        }
+        
+        if (floor2Spot1Id.equals(flr2Spot1Id)) {
+            if (floor2Spot2Id.equals(flr2Spot2Id)) {
+                for (String f: spotFields) {
+                    assertEquals(getFieldValue(floor2Spot1, f, String.class), getFieldValue(fl2Spot1, f, String.class));
+                    assertEquals(getFieldValue(floor2Spot2, f, String.class), getFieldValue(fl2Spot2, f, String.class));
+                }
+            } else {
+                assertTrue(false);
+            }
+        } else if (floor2Spot2Id.equals(flr2Spot1Id)) {
+            if (floor2Spot1Id.equals(flr2Spot2Id)) {
+                for (String f: spotFields) {
+                    assertEquals(getFieldValue(floor2Spot2, f, String.class), getFieldValue(fl2Spot1, f, String.class));
+                    assertEquals(getFieldValue(floor2Spot1, f, String.class), getFieldValue(fl2Spot2, f, String.class));
+                }
+            } else {
+                assertTrue(false);
+            }
+        } else {
+            assertTrue(false);
+        }
     }
 
 }
