@@ -413,5 +413,62 @@ class ParkingSpotTest {
         }
         
     }
+    
+    @Test
+    public void SPOT07_getAllParkingSpotForFloorWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    {
+        Object carPark = carParkService.createCarPark("test8", "testtest", 12);
+        assertNotNull(carPark);
+        testShouldHaveId(carPark);
+        Long carParkId = getFieldValue(carPark, "id", Long.class);
 
+        Object floor1 = carParkService.createCarParkFloor(carParkId, "Floor3-1");
+        assertNotNull(floor1);
+
+        Object spot1 = carParkService.createParkingSpot(carParkId, "Floor3-1", "1.01");
+        assertNotNull(spot1);
+        testShouldHaveId(spot1);
+        Long spot1Id = getFieldValue(spot1, "id", Long.class);
+        
+        Object spot2 = carParkService.createParkingSpot(carParkId, "Floor3-1", "1.02");
+        assertNotNull(spot2);
+        testShouldHaveId(spot2);
+        Long spot2Id = getFieldValue(spot2, "id", Long.class);
+        
+        String[] fields = findFieldByType(spot1, String.class);
+        
+        List<Object> floors = carParkService.getParkingSpots(carParkId, "Floor3-1");
+        assertNotNull(floors);
+        assertEquals(floors.size(), 2);
+        
+        Object sp1 = floors.get(0);
+        Object sp2 = floors.get(1);
+        assertNotNull(sp1);
+        assertNotNull(sp2);
+        testShouldHaveId(sp1);
+        testShouldHaveId(sp2);
+        
+        Long sp1Id = getFieldValue(sp1, "id", Long.class);
+        Long sp2Id = getFieldValue(sp2, "id", Long.class);
+        
+        if (spot1Id.equals(sp1Id)) {
+            if (spot2Id.equals(sp2Id)) {
+                for (String f : fields) {
+                    assertEquals(getFieldValue(spot1, f, String.class), getFieldValue(sp1, f, String.class));
+                    assertEquals(getFieldValue(spot2, f, String.class), getFieldValue(sp2, f, String.class));
+                }
+            } else {
+                assertTrue(false);
+            }
+        } else if (spot2Id.equals(sp1Id)) {
+            if (spot1Id.equals(sp2Id)) {
+                for (String f : fields) {
+                    assertEquals(getFieldValue(spot2, f, String.class), getFieldValue(sp1, f, String.class));
+                    assertEquals(getFieldValue(spot1, f, String.class), getFieldValue(sp2, f, String.class));
+                }
+            }
+        } else {
+            assertTrue(false);
+        }
+    }
 }
