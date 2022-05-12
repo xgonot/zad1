@@ -365,5 +365,53 @@ class ParkingSpotTest {
             assertTrue(true);
         }
     }
+    
+    @Test
+    void SPOT06_uniqueNameForParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    {
+        Object carPark = carParkService.createCarPark("test7", "testtest", 12);
+        assertNotNull(carPark);
+        
+        Long carParkId = getFieldValue(carPark, "id", Long.class);
+        assertNotNull(carParkId);
+        
+        Object floor1 = carParkService.createCarParkFloor(carParkId, "Floor1");
+        assertNotNull(floor1);
+        
+        Object floor1Spot1 = carParkService.createParkingSpot(carParkId, "Floor1", "1.1");
+        assertNotNull(floor1Spot1);
+        
+        Long floor1Spot1Id = getFieldValue(floor1Spot1, "id", Long.class);
+        assertNotNull(floor1Spot1Id);
+        
+        Object fl1Spot1 = carParkService.getParkingSpot(floor1Spot1Id);
+        assertNotNull(fl1Spot1);
+        
+        Object carPark2 = carParkService.createCarPark("test8", "testtest", 12);
+        assertNotNull(carPark);
+        
+        Long carPark2Id = getFieldValue(carPark2, "id", Long.class);
+        assertNotNull(carPark2Id);
+        
+        Object floor2 = carParkService.createCarParkFloor(carPark2Id, "Floor2");
+        assertNotNull(floor2);
+        
+        Object floor2Spot1 = carParkService.createParkingSpot(carPark2Id, "Floor2", "1.1");
+        assertNotNull(floor1Spot1);
+        
+        Long floor2Spot1Id = getFieldValue(floor2Spot1, "id", Long.class);
+        assertNotNull(floor1Spot1Id);
+        
+        Object fl2Spot1 = carParkService.getParkingSpot(floor2Spot1Id);
+        assertNotNull(fl1Spot1);
+        
+        try {
+            Object floor1Spot2 = carParkService.createParkingSpot(carParkId, "Floor1", "1.1");
+            assertNull(floor1Spot2);
+        } catch (Exception e) {
+            assertTrue(true);
+        }
+        
+    }
 
 }

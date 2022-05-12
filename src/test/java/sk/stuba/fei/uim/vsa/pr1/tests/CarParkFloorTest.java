@@ -1,5 +1,6 @@
 package sk.stuba.fei.uim.vsa.pr1.tests;
 
+import java.lang.reflect.InvocationTargetException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -354,12 +355,53 @@ class CarParkFloorTest {
     }
 
     //@Test
-    public void updateCarParkFloorTest() {
-        assertTrue(false);
+    public void updateCarParkFloorTest()  throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        
+        Object carPark = carParkService.createCarPark("test6", "testtest", 12);
+        assertNotNull(carPark);
+        Long carParkId = getFieldValue(carPark, "id", Long.class);
+        assertNotNull(carParkId);
+        Object carParkFloor = carParkService.createCarParkFloor(carParkId, "Floor1");
+        testShouldHaveId(carParkFloor);
+        
+        Long carParkFloorId = getFieldValue(carParkFloor, "id", Long.class);
+        assertNotNull(carParkFloorId);
+        
+        Object floor = carParkService.getCarParkFloor(carParkFloorId);
+        Long floorId = getFieldValue(floor, "id", Long.class);
+        assertEquals(carParkFloorId, floorId);
+        
+        String[] fields = findFieldByType(carParkFloor, String.class);
+        
+        for (String f : fields) {
+           assertEquals(getFieldValue(carParkFloor, f, String.class), getFieldValue(floor, f, String.class));
+        }
+        
+        for (String f : fields) {
+            setFieldValue(carParkFloor, f, "Modified");
+        }
+        
+        Object modifiedFloor = carParkService.updateCarParkFloor(carParkFloor);
+        assertNotNull(modifiedFloor);
+        Long modifiedFloorId = getFieldValue(modifiedFloor, "id", Long.class);
+        
+        assertEquals(carParkFloorId, modifiedFloorId);
+        
+        floor = carParkService.getCarParkFloor(carParkFloorId);
+        floorId = getFieldValue(floor, "id", Long.class);
+        assertEquals(floorId, carParkFloorId);
+        
+        for (String f : fields) {
+            assertEquals(getFieldValue(carParkFloor, f, String.class), getFieldValue(modifiedFloor, f, String.class));
+            assertEquals(getFieldValue(carParkFloor, f, String.class), getFieldValue(floor, f, String.class));
+        }
+        
+        
+        //assertTrue(false);
     }
 
     @Test
-    void FLOOR03_deleteCarParkFloorTest() {
+    void FLOOR03_deleteCarParkFloorEmbeddedTest() {
         Object carPark = carParkService.createCarPark("FLOOR-DELETE", "testtest", 12);
         try {
             assertNotNull(carPark);
