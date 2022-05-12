@@ -403,7 +403,7 @@ class ParkingSpotTest {
         assertNotNull(floor1Spot1Id);
         
         Object fl2Spot1 = carParkService.getParkingSpot(floor2Spot1Id);
-        assertNotNull(fl1Spot1);
+        assertNotNull(fl2Spot1);
         
         try {
             Object floor1Spot2 = carParkService.createParkingSpot(carParkId, "Floor1", "1.1");
