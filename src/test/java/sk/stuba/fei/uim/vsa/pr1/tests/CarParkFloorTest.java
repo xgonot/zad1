@@ -537,4 +537,43 @@ class CarParkFloorTest {
         }
 
     }
+    
+    public void deleteCarParkFloorIdTest() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+    {
+         Object carPark = carParkService.createCarPark("FLOOR-DELETE", "testtest", 12);
+         assertNotNull(carPark);
+         testShouldHaveId(carPark);
+         Long carParkId = getFieldValue(carPark, "id", Long.class);
+         
+         assertNotNull(carParkId);
+         
+        Object floor1 = carParkService.createCarParkFloor(carParkId, "Floor1");
+        assertNotNull(floor1);
+        testShouldHaveId(floor1);
+        Long floorId = getFieldValue(floor1, "id", Long.class);
+        
+        Object fl1 = carParkService.getCarParkFloor(floorId);
+        
+        assertNotNull(fl1);
+        
+        Long fl1Id = getFieldValue(fl1, "id", Long.class);
+        assertEquals(fl1Id, floorId);
+        
+        String[] fields = findFieldByType(fl1, String.class);
+        
+        
+        
+        for (String f : fields) {
+            assertEquals(getFieldValue(floor1, f, String.class), getFieldValue(fl1, f, String.class));
+        }
+        
+        Object deleted = carParkService.deleteCarParkFloor(floorId);
+        
+        try {
+            Object del = carParkService.getCarParkFloor(carParkId);
+            assertNull(del);
+        } catch (Exception e) {
+            assertTrue(true);
+        }
+    }
 }
