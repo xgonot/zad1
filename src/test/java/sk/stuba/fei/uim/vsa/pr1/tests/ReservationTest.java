@@ -279,7 +279,44 @@ class ReservationTest {
                     }
                 }));
             } else {
-                throw new RuntimeException("Cannot test reservation for update. Field not found!");
+                String[] calendarDateFields = findFieldByType(reservation, Calendar.class);
+                if (calendarDateFields.length > 0) {
+                    Calendar controlTime3 = Calendar.getInstance();
+                    for (String dateField: calendarDateFields) {
+                        setFieldValue(reservation, dateField, controlTime3);
+                    }
+                    Object updatedRes = carParkService.updateReservation(reservation);
+                    assertTrue(Arrays.stream(dateFields).allMatch(f -> {
+                        try {
+                            return Objects.equals(controlTime3, getFieldValue(updatedRes, f, Calendar.class));
+                        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                            e.printStackTrace();
+                            return false;
+                        }
+                    }));
+                    
+                } else {
+                    String[] gregorianDateFields = findFieldByType(reservation, GregorianCalendar.class);
+                    if (gregorianDateFields.length > 0) {
+                        GregorianCalendar controlTime4 = (GregorianCalendar) Calendar.getInstance();
+                         for (String dateField: calendarDateFields) {
+                            setFieldValue(reservation, dateField, controlTime4);
+                        }
+                        Object updatedRes = carParkService.updateReservation(reservation);
+                        assertTrue(Arrays.stream(dateFields).allMatch(f -> {
+                            try {
+                                return Objects.equals(controlTime4, getFieldValue(updatedRes, f, GregorianCalendar.class));
+                            } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                                e.printStackTrace();
+                                return false;
+                            }
+                        }));
+                        
+                    } else {
+                         throw new RuntimeException("Cannot test reservation for update. Field not found!");
+                    } 
+                }
+               
             }
         }
     }
