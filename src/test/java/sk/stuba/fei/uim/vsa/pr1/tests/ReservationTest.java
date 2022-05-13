@@ -11,7 +11,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,7 +69,21 @@ class ReservationTest {
                 assertNotNull(startTime);
                 assertTrue(new Date().after(startTime));
             } else {
-                throw new RuntimeException("Cannot test reservation for starting time. Field not found!");
+                Calendar startCalendarTime = getStartDateField(reservation, Calendar.class);
+                if (startCalendarTime != null) {
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(new Date());
+                    assertTrue(c.after(startCalendarTime));
+                } else {
+                    GregorianCalendar gregorianTime = getStartDateField(reservation, GregorianCalendar.class);
+                    if (gregorianTime != null) {
+                        GregorianCalendar g =(GregorianCalendar) GregorianCalendar.getInstance();
+                        assertTrue(g.after(gregorianTime));
+                    } else {
+                         throw new RuntimeException("Cannot test reservation for starting time. Field not found!");
+                    }
+                }
+               
             }
         }
     }
@@ -109,7 +125,18 @@ class ReservationTest {
             if (dateFields.length > 0) {
                 assertTrue(Arrays.stream(dateFields).noneMatch(f -> isFieldNull(ended, f, Date.class)));
             } else {
-                throw new RuntimeException("Cannot test reservation for start time and end time. Field not found!");
+                String[] calendarDateFields = findFieldByType(ended, Calendar.class);
+                if (calendarDateFields.length > 0) {
+                    assertTrue(Arrays.stream(calendarDateFields).noneMatch(f -> isFieldNull(ended, f, Calendar.class)));
+                } else {
+                    String[] gregorianDateFields = findFieldByType(ended, GregorianCalendar.class);
+                    if (gregorianDateFields.length > 0) {
+                         assertTrue(Arrays.stream(gregorianDateFields).noneMatch(f -> isFieldNull(ended, f, GregorianCalendar.class)));
+                    } else {
+                        throw new RuntimeException("Cannot test reservation for start time and end time. Field not found!");
+                    }
+                }
+               
             }
         }
 
@@ -258,7 +285,7 @@ class ReservationTest {
     }
 
     private <T> T getStartDateField(Object reservation, Class<T> dateClass) {
-        String[] starTimeFields = findFieldByType(reservation, LocalDateTime.class);
+        String[] starTimeFields = findFieldByType(reservation, dateClass);
         if (starTimeFields.length > 0) {
             return Arrays.stream(starTimeFields).filter(f ->
                             !isFieldNull(reservation, f, dateClass)
