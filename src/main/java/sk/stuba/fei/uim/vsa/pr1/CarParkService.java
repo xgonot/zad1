@@ -930,7 +930,10 @@ public class CarParkService extends AbstractCarParkService {
         q.setParameter("selectedDate", d);
         List<Object> holidays = q.getResultList();
         em.close();
-        return holidays;
+        if (holidays.isEmpty()) {
+            return null;
+        }
+        return holidays.get(0);
     }
 
     @Override
@@ -987,7 +990,7 @@ public class CarParkService extends AbstractCarParkService {
         List<LocalDate> inList = new ArrayList();
         if (start.getYear() == end.getYear()) {
             inList.add(startDate.withYear(1));
-            if (start.getDayOfYear() != end.getDayOfYear()) {
+            if (start.getDayOfYear()!= end.getDayOfYear()) {
                 for (LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
                     inList.add(d.withYear(1));
                 }

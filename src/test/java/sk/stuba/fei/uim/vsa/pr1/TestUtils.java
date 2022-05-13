@@ -148,5 +148,12 @@ public class TestUtils {
         runSQLStatement(mysql, "TRUNCATE TABLE RESERVATION");
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1");
     }
+    
+    public static void clearHolidayDB(Connection mysql) {
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0");
+        runSQLStatement(mysql, "TRUNCATE TABLE HOLIDAY");
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1");
+         
+    }
 
 }
