@@ -107,11 +107,12 @@ public class TestUtils {
         assertTrue(id > 0);
     }
 
-    public static void runSQLStatement(Connection con, String sql) {
+    public static void runSQLStatement(Connection con, String sql, boolean silent) {
         try (Statement stmt = con.createStatement()) {
             stmt.executeUpdate(sql);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            if (!silent)
+                ex.printStackTrace();
         }
     }
 
@@ -139,21 +140,21 @@ public class TestUtils {
     }
 
     public static void clearDB(Connection mysql) {
-        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0");
-        runSQLStatement(mysql, "TRUNCATE TABLE CAR");
-        runSQLStatement(mysql, "TRUNCATE TABLE USER");
-        runSQLStatement(mysql, "TRUNCATE TABLE CARPARK");
-        runSQLStatement(mysql, "TRUNCATE TABLE CARPARKFLOOR");
-        runSQLStatement(mysql, "TRUNCATE TABLE PARKINGSPOT");
-        runSQLStatement(mysql, "TRUNCATE TABLE RESERVATION");
-        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1");
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CAR", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE USER", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CARPARK", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CARPARKFLOOR", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE PARKINGSPOT", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE RESERVATION", true);
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
     }
-    
+
     public static void clearHolidayDB(Connection mysql) {
-        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0");
-        runSQLStatement(mysql, "TRUNCATE TABLE HOLIDAY");
-        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1");
-         
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE HOLIDAY", true);
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
+
     }
 
 }
