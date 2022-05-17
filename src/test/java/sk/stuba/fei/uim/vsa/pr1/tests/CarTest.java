@@ -79,25 +79,6 @@ class CarTest {
     }
 
     @Test
-    void CAR05_shouldUpdateCarBrandAndModel() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Object car = createNewCar();
-        if (hasField(car, "brand") && hasField(car, "model")) {
-            String newBrand = "Porsche";
-            String newModel = "911 GTS";
-
-            setFieldValue(car, "brand", newBrand);
-            setFieldValue(car, "model", newModel);
-            Object updated = carParkService.updateCar(car);
-            assertNotNull(updated);
-            assertEquals(newBrand, getFieldValue(updated, "brand", String.class));
-            assertEquals(newModel, getFieldValue(updated, "model", String.class));
-            assertEquals(getFieldValue(car, "id"), getFieldValue(updated, "id"));
-        } else {
-            fail("Car object does not have a brand and a model property. So this test cannot be performed!");
-        }
-    }
-
-    @Test
     void CAR06_shouldDeleteCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object car = createNewCar();
         Object deleted = carParkService.deleteCar(getFieldValue(car, "id", Long.class));

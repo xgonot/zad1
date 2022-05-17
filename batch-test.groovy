@@ -19,8 +19,13 @@ String TARGET_TEST_DIR = File.separator + String.join(File.separator, ['src', 't
 String RESPORTS_DIR = File.separator + String.join(File.separator, ['target', 'surefire-reports'])
 def DB = [url : "jdbc:mysql://localhost:3306/VSA_PR1?useUnicode=true&characterEncoding=UTF-8",
           user: 'vsa', password: 'vsa', driver: 'com.mysql.jdbc.Driver']
-def CSV_HEADER = ['AISID', 'Name', 'Email', 'GitHub', 'Test Run', 'Succeeded', 'Failures', 'Errors', 'Skipped', 'Points', 'Notes']
+def CSV_HEADER = ['AISID', 'Name', 'Email', 'GitHub', 'Tests Run', 'Succeeded', 'Failures', 'Errors', 'Skipped', 'Points',
+                  'Bonus Tests Run', 'Bonus Succeeded', 'Bonus Failures', 'Bonus Errors', 'Bonus Skipped', 'Bonus Points', 'Total Points', 'Notes']
 String CSV_DELIMITER = ';'
+String MAVEN_OUTPUT = 'test-output.txt'
+String MAVEN_ERRORS = 'test-error-output.txt'
+String SUREFIRE_REPORTS = 'surefire-test-reports'
+
 
 // CLASSES
 class Student {
@@ -34,12 +39,53 @@ class Student {
     }
 
     Node toXml() {
-        def xml = new NodeBuilder().student {
+        return new NodeBuilder().student {
             'aisId'(aisId)
             'name'(name)
             'email'(email)
-        }
-        return xml as Node
+        } as Node
+    }
+}
+
+class TestsRun {
+    Integer totalRun = 0
+    Integer success = 0
+    Integer failure = 0
+    Integer error = 0
+    Integer skip = 0
+    Integer points = 0
+
+    void calcPoints(Double maxPoints = 20.0) {
+        if (success == 0)
+            calcSuccess()
+        points = Math.ceil((maxPoints / totalRun.doubleValue()) * success.doubleValue()).intValue()
+    }
+
+    void calcSuccess() {
+        success = totalRun - (failure + error + skip)
+    }
+
+    @Override
+    String toString(String delimiter = ';') {
+        return String.join(delimiter, [
+                totalRun as String,
+                success as String,
+                failure as String,
+                error as String,
+                skip as String,
+                points as String
+        ])
+    }
+
+    Node toXml() {
+        return new NodeBuilder().testsRun {
+            'totalRun'(totalRun)
+            'success'(success)
+            'failure'(failure)
+            'error'(error)
+            'skip'(skip)
+            'points'(points)
+        } as Node
     }
 }
 
@@ -47,21 +93,36 @@ class Evaluation {
     String exam = 'B-VSA 21/22 Semestrálny projekt 1'
     Student student = new Student()
     String github = ''
-    Integer testRun = 0
-    Integer success = 0
-    Integer failure = 0
-    Integer error = 0
-    Integer skip = 0
-    Integer points = 0
+    TestsRun required = new TestsRun()
+    TestsRun bonus = new TestsRun()
+    Integer totalPoints = 0
     String notes = ''
     Duration testDuration
 
-    void calcPoints() {
-        points = Math.ceil((20.0 / testRun.doubleValue()) * success.doubleValue()).intValue()
+    TestsRun getTotalTestsRun() {
+        TestsRun total = new TestsRun(
+                totalRun: required.totalRun,
+                success: required.success,
+                failure: required.failure,
+                error: required.error,
+                skip: required.skip,
+                points: required.points
+        )
+        total.totalRun += bonus.totalRun
+        total.success += bonus.success
+        total.failure += bonus.failure
+        total.error += bonus.error
+        total.skip += bonus.skip
+        total.points += bonus.points
+        total.calcPoints()
+        return total
     }
 
-    void calcSuccess() {
-        success = testRun - (failure + error + skip)
+    Integer calcTotalPoints() {
+        required.calcPoints()
+        bonus.calcPoints()
+        totalPoints = required.points + bonus.points
+        return totalPoints
     }
 
     @Override
@@ -69,12 +130,9 @@ class Evaluation {
         return String.join(delimiter, [
                 student.toString(delimiter),
                 github,
-                testRun as String,
-                success as String,
-                failure as String,
-                error as String,
-                skip as String,
-                points as String,
+                required.toString(delimiter),
+                bonus.toString(delimiter),
+                totalPoints as String,
                 notes])
     }
 
@@ -83,16 +141,21 @@ class Evaluation {
             'exam'(exam)
             'student'('Dummy student')
             'github'(github)
-            'testRun'(testRun)
-            'success'(success)
-            'failure'(failure)
-            'error'(error)
-            'skip'(skip)
-            'points'(points)
+            'testsRuns' {
+                'required' {
+                    'tests'('Tests placeholder')
+                }
+                'bonus' {
+                    'tests'('Tests placeholder')
+                }
+            }
+            'totalPoints'(totalPoints)
             'notes'(notes)
             'testDuration'(testDuration.toString())
         }
         (xml.student[0] as Node).replaceNode(student.toXml())
+        (xml.testsRuns.required.tests[0] as Node).replaceNode(required.toXml())
+        (xml.testsRuns.bonus.tests[0] as Node).replaceNode(bonus.toXml())
         return xml
     }
 }
@@ -107,6 +170,23 @@ List<Evaluation> results = []
 // aggregate test reports to one file
 // evaluate results and assign points to a student
 // git push student's repo changes
+
+void removeFrom(File file) {
+    if (file.isFile()) {
+        file.delete()
+        return
+    }
+    assert file.isDirectory()
+    File[] files = file.listFiles()
+    for (File f : files) {
+        if (f.isDirectory()) {
+            removeFrom(f)
+            f.deleteDir()
+            continue
+        }
+        f.delete()
+    }
+}
 
 def copyDir = { File from, File to ->
     to.mkdirs()
@@ -231,51 +311,46 @@ def clearDatabase = {
     sql.close()
 }
 
-def runMvnTest = { File project ->
-    def outFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'test-output.txt')
-    def errFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'test-error-output.txt')
+def runMvnTest = { File project, File output, File errors ->
     def args = ['cmd', '/c', 'mvn', 'clean', 'compile', 'test']
     def builder = new ProcessBuilder(args)
     builder.directory(project)
-    builder.redirectOutput(outFile)
-    builder.redirectError(errFile)
+    builder.redirectOutput(output)
+    builder.redirectError(errors)
     def process = builder.start()
     process.waitFor()
 }
 
-def aggregateTestReports = { File project ->
-    def reportXMLFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'surefire-test-reports.xml')
-    reportXMLFile.text = '<?xml version="1.0" encoding="UTF-8"?>'
-    def reportTXTFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'surefire-test-reports.txt')
-    reportTXTFile.text = ''
-
+def aggregateTestReports = { File project, File surefireXml, File surefireTxt ->
+    surefireXml.text = '<?xml version="1.0" encoding="UTF-8"?>'
+    surefireTxt.text = ''
     File[] reports = new File(project.absolutePath + RESPORTS_DIR).listFiles()
     for (File report : reports) {
         if (report.name.endsWith(".xml")) {
-            reportXMLFile.append(report.text.replace('<?xml version="1.0" encoding="UTF-8"?>', ''))
+            surefireXml.append(report.text.replace('<?xml version="1.0" encoding="UTF-8"?>', ''))
         } else if (report.name.endsWith(".txt")) {
-            reportTXTFile.append(report.text)
-            def delimeter = ''
-            79.times { delimeter += '-' }
-            reportTXTFile.append(delimeter + "\n \n")
+            surefireTxt.append(report.text)
+            def delimiter = ''
+            79.times { delimiter += '-' }
+            surefireTxt.append(delimiter + "\n \n")
         }
     }
 }
 
-def evaluateTests = { Evaluation eval, File project ->
-    def reportTXTFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'surefire-test-reports.txt')
-    reportTXTFile.eachLine { line ->
+def evaluateTests = { File surefireReport ->
+    TestsRun run = new TestsRun()
+    surefireReport.eachLine { line ->
         if (!line.startsWith('Tests run:')) return
         String[] parts = line.split(',')
-        eval.testRun += Integer.parseInt(parts[0].substring(parts[0].lastIndexOf(' ')).trim())
-        eval.failure += Integer.parseInt(parts[1].substring(parts[1].lastIndexOf(' ')).trim())
-        eval.error += Integer.parseInt(parts[2].substring(parts[2].lastIndexOf(' ')).trim())
-        eval.skip += Integer.parseInt(parts[3].substring(parts[3].lastIndexOf(' ')).trim())
+        run.totalRun += Integer.parseInt(parts[0].substring(parts[0].lastIndexOf(' ')).trim())
+        run.failure += Integer.parseInt(parts[1].substring(parts[1].lastIndexOf(' ')).trim())
+        run.error += Integer.parseInt(parts[2].substring(parts[2].lastIndexOf(' ')).trim())
+        run.skip += Integer.parseInt(parts[3].substring(parts[3].lastIndexOf(' ')).trim())
 
     }
-    eval.calcSuccess()
-    eval.calcPoints()
-    return eval
+    run.calcSuccess()
+    run.calcPoints()
+    return run
 }
 
 def buildSummaryFile = { Evaluation eval, File project ->
@@ -283,47 +358,78 @@ def buildSummaryFile = { Evaluation eval, File project ->
     summaryFile.text = XmlUtil.serialize(eval.toXml())
 }
 
+def runTestProcedure = { File project, File outputs, File errors, File surefireXml, File surefireTxt, Closure copyFunction ->
+    println "\t Copying test files"
+    copyFunction()
+    println "\t Starting maven tests"
+    runMvnTest(project, outputs, errors)
+    println "\t Aggregating Surefire reports into one file"
+    aggregateTestReports(project, surefireXml, surefireTxt)
+    println "\t Evaluating test results"
+    return evaluateTests(surefireTxt)
+}
+
 LocalDateTime startOfScript = LocalDateTime.now()
 File[] files = new File("$CWD${File.separator}skupina${STUDENT_GROUP.toUpperCase()}").listFiles()
 for (File project : files) {
     if (!project.isDirectory()) continue
     LocalDateTime startOfTest = LocalDateTime.now()
-    println "Starting student ${project.getName()}"
+    println "Starting evaluation of student ${project.getName()}"
     Evaluation student = new Evaluation()
     student.github = project.getName()
     println "Creating feedback folder"
     new File(project.absolutePath + File.separator + FEEDBACK_DIR).mkdirs()
-    def outFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'test-output.txt')
-    def errFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'test-error-output.txt')
+    File outFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + MAVEN_OUTPUT)
+    File bonusOutFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'bonus-' + MAVEN_OUTPUT)
+    File errFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + MAVEN_ERRORS)
+    File bonusErrFile = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'bonus-' + MAVEN_ERRORS)
+    File surefireXml = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + SUREFIRE_REPORTS + '.xml')
+    File bonusSurefireXml = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'bonus-' + SUREFIRE_REPORTS + '.xml')
+    File surefireTxt = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + SUREFIRE_REPORTS + '.txt')
+    File bonusSurefireTxt = new File(project.absolutePath + File.separator + FEEDBACK_DIR + File.separator + 'bonus-' + SUREFIRE_REPORTS + '.txt')
     outFile.text = ''
     errFile.text = ''
+    bonusOutFile.text = ''
+    bonusErrFile.text = ''
 
     try {
-        println "Copying test files"
-        copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR), new File(project.absolutePath + TARGET_TEST_DIR))
-        copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR + File.separator + "tests"),
-                new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "tests"))
-        copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR + File.separator + "group" + STUDENT_GROUP.toUpperCase()),
-                new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "group" + STUDENT_GROUP.toUpperCase()))
         println "Editing pom.xml"
         Student studentId = editPom(project)
         if (!studentId) {
-            println "Cannot parse student from pom.xml"
+            println "\t Cannot parse student from pom.xml"
             studentId = new Student('name': project.getName())
         }
         student.student = studentId
-        println "Detected student credentials: ${student.student}"
+        println "\t Detected student credentials: ${student.student}"
+
         println "Editing persistence.xml"
         editPersistence(project)
+
         println "Clearing database before tests"
         clearDatabase()
-        println "Starting maven tests"
-        runMvnTest(project)
-        println "Aggregating Surefire reports into one file"
-        aggregateTestReports(project)
-        println "Evaluating test results"
-        student = evaluateTests(student, project)
-        println "Results: Run:${student.testRun}, Success:${student.success}, Failure:${student.failure}, Error:${student.error}, Skip:${student.skip}, Points:${student.points}"
+
+        println "Required Tests Run"
+        student.required = runTestProcedure(project, outFile, errFile, surefireXml, surefireTxt, {
+            def target = new File(project.absolutePath + TARGET_TEST_DIR)
+            removeFrom(target)
+            copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR), target)
+            copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR + File.separator + "tests"),
+                    new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "tests"))
+            copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR + File.separator + "group" + STUDENT_GROUP),
+                    new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "group" + STUDENT_GROUP))
+        })
+        println "Bonus Tests Run"
+        student.bonus = runTestProcedure(project, bonusOutFile, bonusErrFile, bonusSurefireXml, bonusSurefireTxt, {
+            def target = new File(project.absolutePath + TARGET_TEST_DIR)
+            removeFrom(target)
+            copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR), target)
+            copyDir(new File(TEST_PROJECT + SOURCE_TEST_DIR + File.separator + "bonus"),
+                    new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "bonus"))
+        })
+        println "Finalizing results"
+        student.calcTotalPoints()
+        TestsRun totalTests = student.getTotalTestsRun()
+        println "Results: Run: ${totalTests.totalRun}, Success: ${totalTests.success}, Failure: ${totalTests.failure}, Error: ${totalTests.error}, Skip: ${totalTests.skip}, Points: ${totalTests.points}"
     } catch (Exception ex) {
         ex.printStackTrace()
         errFile << "\n"

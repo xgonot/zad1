@@ -65,21 +65,6 @@ class UserTest {
     }
 
     @Test
-    void USER05_shouldCreateAndUpdateUserByChangingEmail() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
-        if (hasField(user, "email")) {
-            String newEmail = "jozko.je.super@example.com";
-            setFieldValue(user, "email", newEmail);
-            Object updated = carParkService.updateUser(user);
-            assertNotNull(updated);
-            assertEquals(newEmail, getFieldValue(updated, "email", String.class));
-            assertEquals(getFieldValue(user, "id"), getFieldValue(updated, "id"));
-        } else {
-            fail("User object does not have email property. So this test cannot be performed!");
-        }
-    }
-
-    @Test
     void USER06_shouldCreateAndDeleteUser() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
         assertNotNull(user);

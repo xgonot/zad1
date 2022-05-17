@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sk.stuba.fei.uim.vsa.pr1.groupC;
+package sk.stuba.fei.uim.vsa.pr1.groupc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
