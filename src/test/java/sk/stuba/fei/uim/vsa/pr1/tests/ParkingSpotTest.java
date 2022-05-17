@@ -287,55 +287,6 @@ class ParkingSpotTest {
     }
     
     @Test
-    void SPOT04_updateParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
-    {
-        Object carPark = carParkService.createCarPark("test7", "testtest", 12);
-        assertNotNull(carPark);
-        
-        Long carParkId = getFieldValue(carPark, "id", Long.class);
-        assertNotNull(carParkId);
-        
-        Object floor1 = carParkService.createCarParkFloor(carParkId, "Floor1");
-        assertNotNull(floor1);
-        
-        Object floor1Spot1 = carParkService.createParkingSpot(carParkId, "Floor1", "1.1");
-        assertNotNull(floor1Spot1);
-        
-        String[] spotFields = findFieldByType(floor1Spot1, String.class);
-        String baseString = "11-";
-        int i=1;
-        for (String f: spotFields) {
-            StringBuilder b = new StringBuilder();
-            b.append(baseString);
-            b.append(String.valueOf(i));
-            setFieldValue(floor1Spot1, f, b.toString());
-            i++;
-        }
-        
-        Object fl1Spot1 = carParkService.updateParkingSpot(floor1Spot1);
-        assertNotNull(fl1Spot1);
-        Long floor1Spot1Id = getFieldValue(floor1Spot1, "id", Long.class);
-        Long fl1Spot1Id = getFieldValue(fl1Spot1, "id", Long.class);
-        assertNotNull(floor1Spot1Id);
-        assertNotNull(fl1Spot1Id);
-        assertEquals(floor1Spot1Id, fl1Spot1Id);
-        for (String f: spotFields) {
-           assertEquals(getFieldValue(floor1Spot1, f, String.class), getFieldValue(fl1Spot1, f, String.class));
-        }
-        
-        Object f1 = carParkService.getParkingSpot(floor1Spot1Id);
-        assertNotNull(f1);
-        Long f1Id = getFieldValue(f1, "id", Long.class);
-        assertNotNull(f1Id);
-        assertEquals(f1Id, floor1Spot1Id);
-        for (String f: spotFields) {
-           assertEquals(getFieldValue(f1, f, String.class), getFieldValue(fl1Spot1, f, String.class));
-        }
-        
-        
-    }
-    
-    @Test
     void SPOT05_deleteParkingSpotWithoutType() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
     {
         Object carPark = carParkService.createCarPark("test7", "testtest", 12);

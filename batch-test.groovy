@@ -25,6 +25,8 @@ String CSV_DELIMITER = ';'
 String MAVEN_OUTPUT = 'test-output.txt'
 String MAVEN_ERRORS = 'test-error-output.txt'
 String SUREFIRE_REPORTS = 'surefire-test-reports'
+Integer MAX_POINTS = 20
+Integer MAX_BONUS_POINTS = 5
 
 
 // CLASSES
@@ -114,13 +116,12 @@ class Evaluation {
         total.error += bonus.error
         total.skip += bonus.skip
         total.points += bonus.points
-        total.calcPoints()
         return total
     }
 
-    Integer calcTotalPoints() {
-        required.calcPoints()
-        bonus.calcPoints()
+    Integer calcTotalPoints(int max, int bon) {
+        required.calcPoints(max.doubleValue())
+        bonus.calcPoints(bon.doubleValue())
         totalPoints = required.points + bonus.points
         return totalPoints
     }
@@ -337,7 +338,7 @@ def aggregateTestReports = { File project, File surefireXml, File surefireTxt ->
     }
 }
 
-def evaluateTests = { File surefireReport ->
+def evaluateTests = { File surefireReport, boolean bonusTests ->
     TestsRun run = new TestsRun()
     surefireReport.eachLine { line ->
         if (!line.startsWith('Tests run:')) return
@@ -348,8 +349,9 @@ def evaluateTests = { File surefireReport ->
         run.skip += Integer.parseInt(parts[3].substring(parts[3].lastIndexOf(' ')).trim())
 
     }
+    int maxPoints = bonusTests ? MAX_BONUS_POINTS : MAX_POINTS
     run.calcSuccess()
-    run.calcPoints()
+    run.calcPoints(maxPoints.doubleValue())
     return run
 }
 
@@ -366,7 +368,7 @@ def runTestProcedure = { File project, File outputs, File errors, File surefireX
     println "\t Aggregating Surefire reports into one file"
     aggregateTestReports(project, surefireXml, surefireTxt)
     println "\t Evaluating test results"
-    return evaluateTests(surefireTxt)
+    return evaluateTests(surefireTxt, outputs.getName().contains('bonus'))
 }
 
 LocalDateTime startOfScript = LocalDateTime.now()
@@ -427,7 +429,7 @@ for (File project : files) {
                     new File(project.absolutePath + TARGET_TEST_DIR + File.separator + "bonus"))
         })
         println "Finalizing results"
-        student.calcTotalPoints()
+        student.calcTotalPoints(MAX_POINTS, MAX_BONUS_POINTS)
         TestsRun totalTests = student.getTotalTestsRun()
         println "Results: Run: ${totalTests.totalRun}, Success: ${totalTests.success}, Failure: ${totalTests.failure}, Error: ${totalTests.error}, Skip: ${totalTests.skip}, Points: ${totalTests.points}"
     } catch (Exception ex) {
