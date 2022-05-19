@@ -1,8 +1,7 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "CAR")

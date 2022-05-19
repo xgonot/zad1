@@ -111,13 +111,13 @@ public class Reservation implements Serializable {
         int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
 
         this.endsAt = now;
-        long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
-        long minDiff = ChronoUnit.MINUTES.between(this.startsAt, this.endsAt);
-        if (minDiff > 0) {
-            diff++;
-        }
+        Long diff = ChronoUnit.SECONDS.between(this.startsAt, this.endsAt);
+        Double hourDiff = diff.doubleValue() / 3600.0;
+        Long hours = hourDiff.longValue();
+        Double overHour = hourDiff - hours;
+        if (overHour > 0) hours++;
 
-        this.price = new Long(diff).doubleValue() * pricePerHour;
+        this.price = hours.doubleValue() * pricePerHour;
     }
 
     public void endReservation(long holidayHours) {
@@ -125,13 +125,13 @@ public class Reservation implements Serializable {
         int pricePerHour = this.parkingSpot.getCarParkFloor().getCarPark().getPricePerHour();
 
         this.endsAt = now;
-        long diff = ChronoUnit.HOURS.between(this.startsAt, this.endsAt);
-        long minDiff = ChronoUnit.MINUTES.between(this.startsAt, this.endsAt);
-        if (minDiff > 0) {
-            diff++;
-        }
+        Long diff = ChronoUnit.SECONDS.between(this.startsAt, this.endsAt);
+        Double hourDiff = diff.doubleValue() / 3600.0;
+        Long hours = hourDiff.longValue();
+        Double overHour = hourDiff - hours;
+        if (overHour > 0) hours++;
 
-        this.price = new Long(diff).doubleValue() * pricePerHour;
+        this.price = hours.doubleValue() * pricePerHour;
         Double holidayPrice = (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
         this.price -= holidayPrice;
     }

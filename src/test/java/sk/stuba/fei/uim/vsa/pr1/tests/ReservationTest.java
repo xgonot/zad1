@@ -111,7 +111,7 @@ class ReservationTest {
         testShouldHaveId(reservation);
 
         log("Waiting for simulating parking clock");
-        Thread.sleep(60500);
+        Thread.sleep(3000);
 
         Object ended = carParkService.endReservation(getFieldValue(reservation, "id", Long.class));
         assertNotNull(ended);

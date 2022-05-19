@@ -621,16 +621,8 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object getUser(String email) {
-        EntityManager em = emf.createEntityManager();
-        User user = null;
-        try {
-            TypedQuery<User> query = em.createQuery("select u from User u where u.email = '" + email + "'", User.class);
-            user = query.getSingleResult();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        em.close();
-        return user;
+        if (email == null) return null;
+        return getObject("select u from User u where u.email = :mail", User.class, Collections.singletonMap("mail", email));
     }
 
     @Override

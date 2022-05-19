@@ -5,23 +5,22 @@
  */
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 /**
- *
  * @author sheax
  */
 @Embeddable
 public class CarParkEmbeddedId implements Serializable {
-        private static final long serialVersionUID = 1L;
-        
-        @Column(name = "CAR_PARK_ID")
-        private Long carParkId;
-        
-        @Column(name = "IDENTIFIER")
-        private String identifier;
+    private static final long serialVersionUID = 1L;
+
+    @Column(name = "CAR_PARK_ID")
+    private Long carParkId;
+
+    @Column(name = "IDENTIFIER")
+    private String identifier;
 
     /**
      * Get the value of identifier

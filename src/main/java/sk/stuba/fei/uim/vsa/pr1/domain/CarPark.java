@@ -1,44 +1,43 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.ArrayList;
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "CAR_PARK")
-public class CarPark implements Serializable{
-    
+public class CarPark implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     @Column(unique = true, name = "NAME")
     private String name;
-    
-    @Column(name="ADDRESS")
+
+    @Column(name = "ADDRESS")
     private String address;
-    
-    @Column(name="PRICE_PER_HOUR")
+
+    @Column(name = "PRICE_PER_HOUR")
     private Integer pricePerHour;
-    
+
     @OneToMany(mappedBy = "carPark")
     private final List<CarParkFloor> carParkFloorList = new ArrayList<>();
 
     public List<CarParkFloor> getCarParkFloorList() {
         return carParkFloorList;
     }
-    
-    public CarPark addCarParkFloor(CarParkFloor floor)
-    {
-        if (! this.carParkFloorList.contains(floor)) {
+
+    public CarPark addCarParkFloor(CarParkFloor floor) {
+        if (!this.carParkFloorList.contains(floor)) {
             floor.setCarPark(this);
             floor.getEmbeddedId().setCarParkId(this.id);
             this.carParkFloorList.add(floor);
         }
-        
+
         return this;
     }
 
