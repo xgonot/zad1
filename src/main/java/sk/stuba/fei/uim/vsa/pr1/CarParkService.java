@@ -1,20 +1,15 @@
 package sk.stuba.fei.uim.vsa.pr1;
 
 
-import sk.stuba.fei.uim.vsa.pr1.domain.Car;
-import sk.stuba.fei.uim.vsa.pr1.domain.User;
-
-import java.time.LocalDateTime;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-
 import sk.stuba.fei.uim.vsa.pr1.domain.*;
-
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 
@@ -133,7 +128,7 @@ public class CarParkService extends AbstractCarParkService {
             if (res.getEndsAt() != null) {
                 if (CarParkService.useHoliday) {
                     LocalDateTime now = LocalDateTime.now();
-                    res.endReservation(this.getHolidayMintes(res.getStartsAt(), now, em));
+                    res.endReservation(this.getHolidayMinutes(res.getStartsAt(), now, em));
                 } else {
                     res.endReservation();
                 }
@@ -250,7 +245,7 @@ public class CarParkService extends AbstractCarParkService {
                 if (r.getEndsAt() == null) {
                     if (CarParkService.useHoliday) {
                         LocalDateTime now = LocalDateTime.now();
-                        r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                        r.endReservation(this.getHolidayMinutes(r.getStartsAt(), now, em));
                     } else {
                         r.endReservation();
                     }
@@ -455,7 +450,7 @@ public class CarParkService extends AbstractCarParkService {
             if (r.getEndsAt() == null) {
                 if (CarParkService.useHoliday) {
                     LocalDateTime now = LocalDateTime.now();
-                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    r.endReservation(this.getHolidayMinutes(r.getStartsAt(), now, em));
                 } else {
                     r.endReservation();
                 }
@@ -577,7 +572,7 @@ public class CarParkService extends AbstractCarParkService {
             if (r.getEndsAt() == null) {
                 if (CarParkService.useHoliday) {
                     LocalDateTime now = LocalDateTime.now();
-                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    r.endReservation(this.getHolidayMinutes(r.getStartsAt(), now, em));
                 } else {
                     r.endReservation();
                 }
@@ -698,7 +693,7 @@ public class CarParkService extends AbstractCarParkService {
             if (r.getEndsAt() == null) {
                 if (CarParkService.useHoliday) {
                     LocalDateTime now = LocalDateTime.now();
-                    r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+                    r.endReservation(this.getHolidayMinutes(r.getStartsAt(), now, em));
                 } else {
                     r.endReservation();
                 }
@@ -721,6 +716,10 @@ public class CarParkService extends AbstractCarParkService {
         ParkingSpot p = em.find(ParkingSpot.class, parkingSpotId);
         Car c = em.find(Car.class, cardId);
         if (c == null || p == null) {
+            em.close();
+            return null;
+        }
+        if (p.getType() != null && !Objects.equals(p.getType().getId(), c.getType().getId())) {
             em.close();
             return null;
         }
@@ -765,7 +764,7 @@ public class CarParkService extends AbstractCarParkService {
         }
         if (CarParkService.useHoliday) {
             LocalDateTime now = LocalDateTime.now();
-            r.endReservation(this.getHolidayMintes(r.getStartsAt(), now, em));
+            r.endReservation(this.getHolidayMinutes(r.getStartsAt(), now, em));
         } else {
             r.endReservation();
         }
@@ -865,37 +864,75 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createCarType(String name) {
-        return null;
+        if (name == null || name.isEmpty())
+            return null;
+        return runTransaction(em -> {
+            CarType type = new CarType(name);
+            em.persist(type);
+            return type;
+        });
     }
 
     @Override
     public List<Object> getCarTypes() {
-        return null;
+        return Arrays.asList(getObjects("select t from CarType t", CarType.class, null).toArray());
     }
 
     @Override
     public Object getCarType(Long carTypeId) {
-        return null;
+        if (carTypeId == null) return null;
+        EntityManager em = emf.createEntityManager();
+        CarType type = em.find(CarType.class, carTypeId);
+        em.close();
+        return type;
     }
 
     @Override
     public Object getCarType(String name) {
-        return null;
+        if (name == null || name.isEmpty()) return null;
+        return getObject("select t from CarType t where t.name = :typeName", CarType.class, Collections.singletonMap("typeName", name));
     }
 
     @Override
     public Object deleteCarType(Long carTypeId) {
-        return null;
+        if (carTypeId == null) return null;
+        return runTransaction(em -> {
+            CarType type = em.find(CarType.class, carTypeId);
+            if (type == null)
+                throw new IllegalStateException("Car type with id " + carTypeId + " does not exist!");
+            em.remove(type);
+            return type;
+        });
     }
 
     @Override
     public Object createCar(Long userId, String brand, String model, String colour, String vehicleRegistrationPlate, Long carTypeId) {
-        return null;
+        if (carTypeId == null) return null;
+        CarType type = (CarType) getCarType(carTypeId);
+        if (type == null) return null;
+        Car car = (Car) createCar(userId, brand, model, colour, vehicleRegistrationPlate);
+        if (car == null) return null;
+        return runTransaction(em -> {
+            Car c = em.find(Car.class, car.getId());
+            c.setType(type);
+            em.merge(c);
+            return c;
+        });
     }
 
     @Override
     public Object createParkingSpot(Long carParkId, String floorIdentifier, String spotIdentifier, Long carTypeId) {
-        return null;
+        if (carTypeId == null) return null;
+        CarType type = (CarType) getCarType(carTypeId);
+        if (type == null) return null;
+        ParkingSpot spot = (ParkingSpot) createParkingSpot(carParkId, floorIdentifier, spotIdentifier);
+        if (spot == null) return null;
+        return runTransaction(em -> {
+            ParkingSpot s = em.find(ParkingSpot.class, spot.getId());
+            s.setType(type);
+            em.merge(s);
+            return s;
+        });
     }
 
     @Override
@@ -980,7 +1017,26 @@ public class CarParkService extends AbstractCarParkService {
         return obj;
     }
 
-    private long getHolidayMintes(LocalDateTime start, LocalDateTime end, EntityManager em) {
+    private <T> List<T> getObjects(String query, Class<T> clazz, Map<String, Object> parameters) {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<T> q = em.createQuery(query, clazz);
+        if (parameters != null) {
+            parameters.forEach(q::setParameter);
+        }
+        List<T> list = q.getResultList();
+        em.close();
+        return list;
+    }
+
+    private <T> T getObject(String query, Class<T> clazz, Map<String, Object> parameters) {
+        List<T> list = getObjects(query, clazz, parameters);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
+
+    private long getHolidayMinutes(LocalDateTime start, LocalDateTime end, EntityManager em) {
         LocalDate startDate = start.toLocalDate();
         LocalDate endDate = end.toLocalDate();
         if (endDate.isBefore(startDate)) {
@@ -990,7 +1046,7 @@ public class CarParkService extends AbstractCarParkService {
         List<LocalDate> inList = new ArrayList();
         if (start.getYear() == end.getYear()) {
             inList.add(startDate.withYear(1));
-            if (start.getDayOfYear()!= end.getDayOfYear()) {
+            if (start.getDayOfYear() != end.getDayOfYear()) {
                 for (LocalDate d = startDate.plusDays(1); d.isBefore(endDate); d = d.plusDays(1)) {
                     inList.add(d.withYear(1));
                 }

@@ -1,12 +1,14 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "USER")
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 8059659837350563206L;
 
     @Id
     @GeneratedValue

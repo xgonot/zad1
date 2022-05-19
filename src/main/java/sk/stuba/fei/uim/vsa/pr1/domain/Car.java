@@ -7,11 +7,11 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CAR")
 public class Car implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String brand;
@@ -23,6 +23,9 @@ public class Car implements Serializable {
 
     @ManyToOne
     private User user;
+
+    @ManyToOne
+    private CarType type;
 
     public Car() {
     }
@@ -80,5 +83,13 @@ public class Car implements Serializable {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public CarType getType() {
+        return type;
+    }
+
+    public void setType(CarType type) {
+        this.type = type;
     }
 }

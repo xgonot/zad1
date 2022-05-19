@@ -177,7 +177,6 @@ void removeFrom(File file) {
         file.delete()
         return
     }
-    assert file.isDirectory()
     File[] files = file.listFiles()
     for (File f : files) {
         if (f.isDirectory()) {
@@ -372,6 +371,8 @@ def runTestProcedure = { File project, File outputs, File errors, File surefireX
 }
 
 LocalDateTime startOfScript = LocalDateTime.now()
+println "Evaluating students projects in Group " + STUDENT_GROUP.toUpperCase()
+println "\n"
 File[] files = new File("$CWD${File.separator}skupina${STUDENT_GROUP.toUpperCase()}").listFiles()
 for (File project : files) {
     if (!project.isDirectory()) continue
@@ -452,7 +453,7 @@ for (File project : files) {
     println "-----------------------------\n"
 }
 
-def resultFile = new File(CWD + File.separator + 'results.csv')
+def resultFile = new File(CWD + File.separator + "results-${STUDENT_GROUP}.csv")
 resultFile.text = String.join(CSV_DELIMITER, CSV_HEADER) + '\n'
 results.each {
     resultFile.append(it.toString(CSV_DELIMITER))

@@ -36,16 +36,21 @@ class CarTest {
         Object car = createNewCar();
         assertNotNull(car);
         testShouldHaveId(car);
+        Object user = null;
         if (hasField(car, "user")) {
-            Object carUser = getFieldValue(car, "user");
-            assertNotNull(carUser);
-            Object foundUser = carParkService.getUser(getFieldValue(carUser, "id", Long.class));
+            user = getFieldValue(car, "user");
+        } else if (hasField(car, "owner")) {
+            user = getFieldValue(car, "owner");
+        }
+        if (user != null) {
+            Object foundUser = carParkService.getUser(getFieldValue(user, "id", Long.class));
             assertNotNull(foundUser);
         }
     }
 
     private Object createNewCar() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Object user = carParkService.createUser(TestData.User.firstName, TestData.User.lastName, TestData.User.email);
+        assertNotNull(user);
         return carParkService.createCar(getFieldValue(user, "id", Long.class),
                 TestData.Car.brand, TestData.Car.model, TestData.Car.colour, TestData.Car.ecv);
     }

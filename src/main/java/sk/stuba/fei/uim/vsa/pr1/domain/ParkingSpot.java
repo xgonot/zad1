@@ -1,25 +1,30 @@
 package sk.stuba.fei.uim.vsa.pr1.domain;
 
+import javax.persistence.*;
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 @Entity
 public class ParkingSpot implements Serializable {
-     private static final long serialVersionUID = 1L;
-     
-     @Id
-     @GeneratedValue(strategy=GenerationType.AUTO)
-     private Long id;
-     
-     @ManyToOne
-     private CarParkFloor carParkFloor;
-     
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @ManyToOne
+    private CarParkFloor carParkFloor;
+
     private String spotIdentifier;
+
+    @ManyToOne
+    private CarType type;
+
+    public ParkingSpot() {
+    }
+
+    public ParkingSpot(String spotIdentifier) {
+        this.spotIdentifier = spotIdentifier;
+    }
 
     /**
      * Get the value of identifier
@@ -64,5 +69,13 @@ public class ParkingSpot implements Serializable {
 
     public void setCarParkFloor(CarParkFloor carParkFloor) {
         this.carParkFloor = carParkFloor;
+    }
+
+    public CarType getType() {
+        return type;
+    }
+
+    public void setType(CarType type) {
+        this.type = type;
     }
 }

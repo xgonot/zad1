@@ -53,8 +53,7 @@ public class TestUtils {
     public static boolean hasField(Object obj, String field) {
         try {
             Method getter = obj.getClass().getMethod("get" + capitalize(field));
-            assertNotNull(getter);
-            return true;
+            return getter != null && getter.getParameterCount() == 0;
         } catch (NoSuchMethodException e) {
             return false;
         }
@@ -154,7 +153,12 @@ public class TestUtils {
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
         runSQLStatement(mysql, "TRUNCATE TABLE HOLIDAY", true);
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
+    }
 
+    public static void clearCarTypeDB(Connection mysql) {
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CAR_TYPE", true);
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
     }
 
 }

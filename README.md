@@ -59,7 +59,7 @@ kupónu musí byť zaznamená v entite rezervácie.
 
 Rozšírte aplikáciu o **typy áut**, ktoré môžu v parkovacom dome parkovať (napr. elektrické, LPG a pod.). Jednotlivé
 parkovacie miesta obsahujú atribút, pre ktorý typ auta sú určené a taktiež každé auto má definovaný typ. Implementujte
-riešenie tak aby typ auta bola samostatný entita. Pri vytvorení rezervácie musí byť implementovaná kontrola, kde iba
+riešenie tak aby typ auta bola samostatná entita. Pri vytvorení rezervácie musí byť implementovaná kontrola, kde iba
 auto rovnakého typu ako je určené v parkovacom mieste na ňom môže parkovať, v opačnom prípade bude rezervácia
 odmietnutá.
 
