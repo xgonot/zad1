@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CarParkService extends AbstractCarParkService {
 
@@ -834,32 +835,89 @@ public class CarParkService extends AbstractCarParkService {
 
     @Override
     public Object createDiscountCoupon(String name, Integer discount) {
-        return null;
+        if (name == null || discount == null) return null;
+        return runTransaction(em -> {
+            Coupon coupon = new Coupon(name, discount);
+            em.persist(coupon);
+            return coupon;
+        });
     }
 
     @Override
     public void giveCouponToUser(Long couponId, Long userId) {
-
+        if (couponId == null || userId == null)
+            throw new IllegalArgumentException("Provided arguments are null");
+        Coupon coupon = (Coupon) getCoupon(couponId);
+        if (coupon == null)
+            throw new IllegalArgumentException("Cannot found coupon with id " + couponId);
+        User user = (User) getUser(userId);
+        if (user == null)
+            throw new IllegalArgumentException("Cannot found user with id " + userId);
+        runTransaction(em -> {
+            UserCoupon uc = new UserCoupon();
+            uc.setUser(user);
+            uc.setCoupon(coupon);
+            em.persist(uc);
+            return uc;
+        });
     }
 
     @Override
     public Object getCoupon(Long couponId) {
-        return null;
+        if (couponId == null) return null;
+        EntityManager em = emf.createEntityManager();
+        Coupon coupon = em.find(Coupon.class, couponId);
+        em.close();
+        return coupon;
     }
 
     @Override
     public List<Object> getCoupons(Long userId) {
-        return null;
-    }
-
-    @Override
-    public Object endReservation(Long reservationId, Long couponId) {
-        return null;
+        List<Object> coupons = new ArrayList<>();
+        if (userId == null) return coupons;
+        User user = (User) getUser(userId);
+        if (user == null)
+            throw new IllegalArgumentException("Cannot found user with id " + userId);
+        List<UserCoupon> uc = getObjects("select uc from UserCoupon uc where uc.user = :user",
+                UserCoupon.class, Collections.singletonMap("user", user));
+        coupons = uc.stream().map(UserCoupon::getCoupon).collect(Collectors.toList());
+        return coupons;
     }
 
     @Override
     public Object deleteCoupon(Long couponId) {
-        return null;
+        if (couponId == null) return null;
+        return runTransaction(em -> {
+            Coupon coupon = em.find(Coupon.class, couponId);
+            if (coupon == null)
+                throw new IllegalStateException("Coupon with id " + couponId + " does not exist!");
+            TypedQuery<UserCoupon> ucQuery = em.createQuery("select uc from UserCoupon uc where uc.coupon = :coupon", UserCoupon.class);
+            ucQuery.setParameter("coupon", coupon);
+            List<UserCoupon> ucs = ucQuery.getResultList();
+            if (ucs != null && !ucs.isEmpty()) {
+                ucs.forEach(em::remove);
+            }
+            em.remove(coupon);
+            return coupon;
+        });
+    }
+
+    @Override
+    public Object endReservation(Long reservationId, Long couponId) {
+        if (reservationId == null || couponId == null) return null;
+        return runTransaction(em -> {
+            Reservation r = em.find(Reservation.class, reservationId);
+            if (r == null)
+                throw new IllegalStateException("Reservation with id " + reservationId + " does not exist!");
+            if (r.getEndsAt() != null)
+                throw new IllegalStateException("Reservation with id " + reservationId + " has already ended with end time " + r.getEndsAt().toString());
+            Coupon c = em.find(Coupon.class, couponId);
+            if (c == null)
+                throw new IllegalStateException("Coupon with id " + couponId + " does not exist!");
+            r.endReservation(c.getDiscount());
+            em.merge(r);
+            return r;
+        });
     }
 
     @Override

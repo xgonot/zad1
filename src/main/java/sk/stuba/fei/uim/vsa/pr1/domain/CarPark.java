@@ -3,14 +3,10 @@ package sk.stuba.fei.uim.vsa.pr1.domain;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 @Entity
+@Table(name = "CAR_PARK")
 public class CarPark implements Serializable{
     
     private static final long serialVersionUID = 1L;

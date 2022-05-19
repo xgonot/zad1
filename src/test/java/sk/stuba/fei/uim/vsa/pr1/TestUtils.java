@@ -142,9 +142,9 @@ public class TestUtils {
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
         runSQLStatement(mysql, "TRUNCATE TABLE CAR", true);
         runSQLStatement(mysql, "TRUNCATE TABLE USER", true);
-        runSQLStatement(mysql, "TRUNCATE TABLE CARPARK", true);
-        runSQLStatement(mysql, "TRUNCATE TABLE CARPARKFLOOR", true);
-        runSQLStatement(mysql, "TRUNCATE TABLE PARKINGSPOT", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CAR_PARK", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CAR_PARK_FLOOR", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE PARKING_SPOT", true);
         runSQLStatement(mysql, "TRUNCATE TABLE RESERVATION", true);
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
     }
@@ -158,6 +158,17 @@ public class TestUtils {
     public static void clearCarTypeDB(Connection mysql) {
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
         runSQLStatement(mysql, "TRUNCATE TABLE CAR_TYPE", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE CARTYPE", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE TYPE", true);
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
+    }
+
+    public static void clearCouponDB(Connection mysql) {
+        runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=0", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE COUPON", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE DISCOUNT_COUPON", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE DISCOUNTCOUPON", true);
+        runSQLStatement(mysql, "TRUNCATE TABLE USER_COUPON", true);
         runSQLStatement(mysql, "SET FOREIGN_KEY_CHECKS=1", true);
     }
 

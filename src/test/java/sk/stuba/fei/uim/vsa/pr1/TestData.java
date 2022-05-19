@@ -56,4 +56,9 @@ public class TestData {
         public static final String spot = "1.01";
     }
 
+    public static class Coupon {
+        public static final String name = "TestDiscountCoupon";
+        public static final Integer discount = 20;
+    }
+
 }

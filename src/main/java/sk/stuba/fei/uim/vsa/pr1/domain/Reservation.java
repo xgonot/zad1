@@ -135,4 +135,9 @@ public class Reservation implements Serializable {
         Double holidayPrice = (new Long(holidayHours).doubleValue() * pricePerHour * 0.25);
         this.price -= holidayPrice;
     }
+
+    public void endReservation(Integer discount) {
+        endReservation();
+        this.price = this.price * (1 - (discount.doubleValue() / 100.0));
+    }
 }

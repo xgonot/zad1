@@ -23,6 +23,9 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user")
     private List<Car> cars;
 
+    @OneToMany(mappedBy = "user")
+    private List<UserCoupon> coupons;
+
     public User() {
         this.cars = new ArrayList<>();
     }
@@ -75,10 +78,18 @@ public class User implements Serializable {
     }
 
     public User addCar(Car car) {
-        if (! this.cars.contains(car)) {
+        if (!this.cars.contains(car)) {
             car.setUser(this);
             this.cars.add(car);
         }
         return this;
+    }
+
+    public List<UserCoupon> getCoupons() {
+        return coupons;
+    }
+
+    public void setCoupons(List<UserCoupon> coupons) {
+        this.coupons = coupons;
     }
 }
