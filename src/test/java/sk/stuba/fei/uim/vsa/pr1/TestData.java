@@ -54,6 +54,7 @@ public class TestData {
         public static final Integer price = 12;
         public static final String floor = "Floor 1-1";
         public static final String spot = "1.01";
+        public static final String spot2 = "1.02";
     }
 
     public static class Coupon {
